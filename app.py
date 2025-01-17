@@ -27,15 +27,15 @@ def login_page():
 
 # Main App Page
 def main_page():
-    st.title(f"Customer ATTRITION")
+    st.title(f"Customer ATTRITION Prediction")
     st.sidebar.header(f"Welcome, {st.session_state.user_name}")
 
     # Sidebar Inputs
     st.sidebar.header('Input Data')
     customer_age = st.sidebar.number_input("Customer Age", min_value=18, max_value=100, value=30)
-    credit_limit = st.sidebar.number_input("Credit Limit", min_value=0.0, value=3000.0)
+    credit_limit = st.sidebar.number_input("Credit Limit", min_value=0, value=7000)
     total_transactions_count = st.sidebar.number_input("Total Transactions Count", min_value=0, value=50)
-    total_transaction_amount = st.sidebar.number_input("Total Transaction Amount", min_value=0.0, value=5000.0)
+    total_transaction_amount = st.sidebar.number_input("Total Transaction Amount", min_value=0, value=5000)
     inactive_months_12_months = st.sidebar.number_input("Inactive Months (12 Months)", min_value=0, max_value=12, value=2)
     transaction_count_change_q4_q1 = st.sidebar.number_input("Transaction Count Change (Q4-Q1)", min_value=0.0, value=0.5)
     total_products_used = st.sidebar.number_input("Total Products Used", min_value=1, value=2)
@@ -85,24 +85,28 @@ def main_page():
             
             # Show churn-related insights
             st.subheader("Churn Risk Insights:")
-            st.write(f"- **Inactive Months (12 months):** {inactive_months_12_months}")
+            st.write(f"- **Inactive Months (12 months):** {inactive_months_12_months} months")
             st.write(f"- **Transaction Amount Change (Q4-Q1):** {transaction_amount_change_q4_q1}")
             st.write(f"- **Total Products Used:** {total_products_used}")
             st.write(f"- **Total Transactions Count:** {total_transactions_count}")
             st.write(f"- **Average Credit Utilization:** {average_credit_utilization}")
             st.write(f"- **Customer Contacts in 12 Months:** {customer_contacts_12_months}")
+            st.write(f"- **Credit Limit:** ${credit_limit:,.2f}")
+            st.write(f"- **Total Transaction Amount:** ${total_transaction_amount:,.2f}")
             
         else:
             st.markdown(f"### Prediction: Customer is unlikely to churn ❌")
             
             # Show non-churn-related insights
             st.subheader("Non-Churn Insights:")
-            st.write(f"- **Inactive Months (12 months):** {inactive_months_12_months}")
+            st.write(f"- **Inactive Months (12 months):** {inactive_months_12_months} months")
             st.write(f"- **Transaction Amount Change (Q4-Q1):** {transaction_amount_change_q4_q1}")
             st.write(f"- **Total Products Used:** {total_products_used}")
             st.write(f"- **Total Transactions Count:** {total_transactions_count}")
             st.write(f"- **Average Credit Utilization:** {average_credit_utilization}")
             st.write(f"- **Customer Contacts in 12 Months:** {customer_contacts_12_months}")
+            st.write(f"- **Credit Limit:** ${credit_limit:,.2f}")
+            st.write(f"- **Total Transaction Amount:** ${total_transaction_amount:,.2f}")
 
 # Run the app
 if not st.session_state.logged_in:
