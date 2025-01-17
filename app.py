@@ -13,7 +13,7 @@ if "user_name" not in st.session_state:
 
 # Login Page
 def login_page():
-    st.title("Customer ATTRITION - Login")
+    st.markdown("<h1 style='text-align: center;'>Customer <span style='color: red;'>ATTRITION</span> - Login</h1>", unsafe_allow_html=True)
     user_name = st.text_input("Enter your name:")
     login_button = st.button("Log In")
 
@@ -27,7 +27,7 @@ def login_page():
 
 # Main App Page
 def main_page():
-    st.title(f"Customer ATTRITION Prediction")
+    st.title(f"Customer Attrition Prediction")
     st.sidebar.header(f"Welcome, {st.session_state.user_name}")
 
     # Sidebar Inputs
