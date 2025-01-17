@@ -13,7 +13,7 @@ if "user_name" not in st.session_state:
 
 # Login Page
 def login_page():
-    st.markdown("<h1 style='text-align: center;'>Customer <span style='color: red;'>ATTRITION</span> - Login</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center;'>Customer <span style='color: red;'>Attrition </span> - Login</h1>", unsafe_allow_html=True)
     user_name = st.text_input("Enter your name:")
     login_button = st.button("Log In")
 
