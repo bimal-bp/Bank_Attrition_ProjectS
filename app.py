@@ -21,18 +21,17 @@ customer_contacts_12_months = st.number_input("Customer Contacts in 12 Months", 
 transaction_amount_change_q4_q1 = st.number_input("Transaction Amount Change (Q4-Q1)", min_value=0.0, value=0.5)
 months_as_customer = st.number_input("Months as Customer", min_value=1, value=12)
 
-# Dummy categorical features (replace with real inputs for categorical values)
-college = st.selectbox("College", [0, 1])
-doctorate = st.selectbox("Doctorate", [0, 1])
-graduate = st.selectbox("Graduate", [0, 1])
-high_school = st.selectbox("High School", [0, 1])
-post_graduate = st.selectbox("Post-Graduate", [0, 1])
-uneducated = st.selectbox("Uneducated", [0, 1])
-salary_120k = st.selectbox("$120K +", [0, 1])
-salary_40k_60k = st.selectbox("$40K - $60K", [0, 1])
-salary_60k_80k = st.selectbox("$60K - $80K", [0, 1])
-salary_80k_120k = st.selectbox("$80K - $120K", [0, 1])
-less_than_40k = st.selectbox("Less than $40K", [0, 1])
+# Multi-select options for education level
+education_level = st.multiselect(
+    "Select Education Level",
+    ["College", "Doctorate", "Graduate", "High School", "Post-Graduate", "Uneducated"]
+)
+
+# Multi-select options for income range
+income_range = st.multiselect(
+    "Select Income Range",
+    ["$120K +", "$40K - $60K", "$60K - $80K", "$80K - $120K", "Less than $40K"]
+)
 
 # Prepare input data for prediction (ensure correct order of columns)
 input_data = {
@@ -47,18 +46,17 @@ input_data = {
     "Customer_Contacts_12_Months": [customer_contacts_12_months],
     "Transaction_Amount_Change_Q4_Q1": [transaction_amount_change_q4_q1],
     "Months_as_Customer": [months_as_customer],
-    "College": [college],
-    "Doctorate": [doctorate],
-    "Graduate": [graduate],
-    "High School": [high_school],
-    "Post-Graduate": [post_graduate],
-    "Uneducated": [uneducated],
-    "$120K +": [salary_120k],
-    "$40K - $60K": [salary_40k_60k],
-    "$60K - $80K": [salary_60k_80k],
-    "$80K - $120K": [salary_80k_120k],
-    "Less than $40K": [less_than_40k]
 }
+
+# Set the education columns based on multi-select
+education_columns = ["College", "Doctorate", "Graduate", "High School", "Post-Graduate", "Uneducated"]
+for column in education_columns:
+    input_data[column] = [1 if column in education_level else 0]
+
+# Set the income columns based on multi-select
+income_columns = ["$120K +", "$40K - $60K", "$60K - $80K", "$80K - $120K", "Less than $40K"]
+for column in income_columns:
+    input_data[column] = [1 if column in income_range else 0]
 
 # Create a DataFrame for input data
 input_df = pd.DataFrame(input_data)
