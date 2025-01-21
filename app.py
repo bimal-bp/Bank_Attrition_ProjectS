@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import joblib
 
+
 # Load the trained model
 best_rf_model = joblib.load('best_rf_model.pkl')
 
