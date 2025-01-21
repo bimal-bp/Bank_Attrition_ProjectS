@@ -81,32 +81,15 @@ def main_page():
         prediction = best_rf_model.predict(input_df)
         
         if prediction[0] == 1:
-            st.markdown(f"### Prediction: Customer is likely to churn ✅")
+            st.markdown(f"### Prediction: Customer is likely to attrit ✅")
             
-            # Show churn-related insights
-            st.subheader("Churn Risk Insights:")
-            st.write(f"- **Inactive Months (12 months):** {inactive_months_12_months} months")
-            st.write(f"- **Transaction Amount Change (Q4-Q1):** {transaction_amount_change_q4_q1}")
-            st.write(f"- **Total Products Used:** {total_products_used}")
-            st.write(f"- **Total Transactions Count:** {total_transactions_count}")
-            st.write(f"- **Average Credit Utilization:** {average_credit_utilization}")
-            st.write(f"- **Customer Contacts in 12 Months:** {customer_contacts_12_months}")
-            st.write(f"- **Credit Limit:** ${credit_limit:,.2f}")
-            st.write(f"- **Total Transaction Amount:** ${total_transaction_amount:,.2f}")
-            
+            # Show attrition-related insights
+            st.subheader("Attrition Risk Insights:")
         else:
-            st.markdown(f"### Prediction: Customer is unlikely to churn ❌")
+            st.markdown(f"### Prediction: Customer is unlikely to attrit ❌")
             
-            # Show non-churn-related insights
-            st.subheader("Non-Churn Insights:")
-            st.write(f"- **Inactive Months (12 months):** {inactive_months_12_months} months")
-            st.write(f"- **Transaction Amount Change (Q4-Q1):** {transaction_amount_change_q4_q1}")
-            st.write(f"- **Total Products Used:** {total_products_used}")
-            st.write(f"- **Total Transactions Count:** {total_transactions_count}")
-            st.write(f"- **Average Credit Utilization:** {average_credit_utilization}")
-            st.write(f"- **Customer Contacts in 12 Months:** {customer_contacts_12_months}")
-            st.write(f"- **Credit Limit:** ${credit_limit:,.2f}")
-            st.write(f"- **Total Transaction Amount:** ${total_transaction_amount:,.2f}")
+            # Show non-attrition-related insights
+            st.subheader("Non-Attrition Insights:")
 
 # Run the app
 if not st.session_state.logged_in:
