@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import joblib
 
-
 # Load the trained model
 best_rf_model = joblib.load('best_rf_model.pkl')
 
@@ -83,13 +82,15 @@ def main_page():
         
         if prediction[0] == 1:
             st.markdown(f"### Prediction: Customer is likely to attrit ✅")
-            
-            # Show attrition-related insights
             st.subheader("Attrition Risk Insights:")
+            st.write(f"- **Inactive Months (12 months):** {inactive_months_12_months} months")
+            st.write(f"- **Transaction Amount Change (Q4-Q1):** {transaction_amount_change_q4_q1}")
+            st.write(f"- **Total Products Used:** {total_products_used}")
+            st.write(f"- **Total Transactions Count:** {total_transactions_count}")
+            st.write(f"- **Average Credit Utilization:** {average_credit_utilization}")
+            st.write(f"- **Customer Contacts in 12 Months:** {customer_contacts_12_months}")
         else:
             st.markdown(f"### Prediction: Customer is unlikely to attrit ❌")
-            
-            # Show non-attrition-related insights
             st.subheader("Non-Attrition Insights:")
 
 # Run the app
