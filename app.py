@@ -69,7 +69,7 @@ negative_feedback = [
     "Not enough transparency in pricing."
 ]
 
-def display_feedback(prediction, customer_name, customer_age):
+def display_feedback(prediction, customer_name):
     if prediction == "Likely to Stay":
         feedback_to_show = random.sample(positive_feedback, 2) + random.sample(negative_feedback, 1)
         st.subheader("Customer Sentiment Insights (Stay Prediction)")
@@ -88,14 +88,6 @@ def display_feedback(prediction, customer_name, customer_age):
         st.write(f"Negative feedback from customer: {customer_name}")
     else:
         st.write(f"Positive feedback from customer: {customer_name}")
-
-    # Age-based feedback modification
-    if customer_age < 30:
-        st.write("Feedback from younger customers often values user-friendliness and product innovations.")
-    elif 30 <= customer_age <= 50:
-        st.write("Feedback from middle-aged customers often focuses on reliability and customer support.")
-    else:
-        st.write("Feedback from older customers tends to emphasize security and ease of use.")
 
 # Main App Page
 def main_page():
@@ -162,25 +154,27 @@ def main_page():
             st.write(f"- *Total Transactions Count:* {total_transactions_count}")
             st.write(f"- *Average Credit Utilization:* {average_credit_utilization}")
             st.write(f"- *Customer Contacts in 12 Months:* {customer_contacts_12_months}")
-            display_feedback("Likely to Churn", st.session_state.user_name, customer_age)
+            display_feedback("Likely to Churn", st.session_state.user_name)
         else:
             st.markdown(f"### Prediction: Customer is unlikely to attrit ❌")
             st.write("Customer will stay.")
             st.subheader("Non-Attrition Insights:")
-            display_feedback("Likely to Stay", st.session_state.user_name, customer_age)
+            display_feedback("Likely to Stay", st.session_state.user_name)
 
-    # Navigation Button to Age-Specific Insights
-    if st.button("See Age-Specific Insights"):
-        age_specific_insights_page(customer_age)
+    # Button to Navigate to Customer Feedback Page
+    if st.button("See Customer Feedback Insights"):
+        customer_feedback_page()
 
-def age_specific_insights_page(customer_age):
-    st.title("Age-Specific Feedback Insights")
-    if customer_age < 30:
-        st.write("Feedback from younger customers often values user-friendliness and product innovations.")
-    elif 30 <= customer_age <= 50:
-        st.write("Feedback from middle-aged customers often focuses on reliability and customer support.")
-    else:
-        st.write("Feedback from older customers tends to emphasize security and ease of use.")
+# Customer Feedback Insights Page
+def customer_feedback_page():
+    st.title("Customer Feedback Insights")
+
+    # Display General Customer Feedback
+    feedback_to_show = random.sample(positive_feedback, 2) + random.sample(negative_feedback, 1)
+    st.subheader("Customer Sentiment Insights")
+    st.markdown("### **Customer Feedback:**")
+    for feedback in feedback_to_show:
+        st.write(f"- {feedback}")
 
 # App Navigation
 if not st.session_state.logged_in:
