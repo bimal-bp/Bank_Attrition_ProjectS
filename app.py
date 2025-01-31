@@ -169,7 +169,20 @@ def main_page():
             st.subheader("Non-Attrition Insights:")
             display_feedback("Likely to Stay", st.session_state.user_name, customer_age)
 
-# Run the app
+    # Navigation Button to Age-Specific Insights
+    if st.button("See Age-Specific Insights"):
+        age_specific_insights_page(customer_age)
+
+def age_specific_insights_page(customer_age):
+    st.title("Age-Specific Feedback Insights")
+    if customer_age < 30:
+        st.write("Feedback from younger customers often values user-friendliness and product innovations.")
+    elif 30 <= customer_age <= 50:
+        st.write("Feedback from middle-aged customers often focuses on reliability and customer support.")
+    else:
+        st.write("Feedback from older customers tends to emphasize security and ease of use.")
+
+# App Navigation
 if not st.session_state.logged_in:
     login_page()
 else:
