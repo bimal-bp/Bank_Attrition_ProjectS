@@ -17,11 +17,14 @@ if "account_type" not in st.session_state:
 if "email" not in st.session_state:
     st.session_state.email = ""
 if "prediction_type" not in st.session_state:
-    st.session_state.prediction_type = "Single"  # Default to Single
+    st.session_state.prediction_type = "Single"
+
+# Default password for the login page
+PASSWORD = "password@123"
 
 # Login Page
 def login_page():
-    st.markdown("<h1 style='text-align: center;'>Customer <span style='color: red;'>Attrition </span> - Login</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center;'>Customer <span style='color: red;'>Attrition</span> - Login</h1>", unsafe_allow_html=True)
 
     # User Name
     user_name = st.text_input("Enter your name:")
@@ -32,9 +35,6 @@ def login_page():
     # Email Address (optional)
     email = st.text_input("Enter your email (optional):")
 
-    # Password
-    password = st.text_input("Enter your password:", type="password")
-
     # Inquiry on prediction type (Single or Group)
     st.markdown("<h3 style='color: green;'>Which type of prediction would you like to make?</h3>", unsafe_allow_html=True)
     prediction_type = st.selectbox(
@@ -42,19 +42,22 @@ def login_page():
         index=["Single", "Group"].index(st.session_state.prediction_type)
     )
 
+    password = st.text_input("Enter the password:", type="password")
+
     login_button = st.button("Log In")
 
     if login_button:
-        if user_name.strip() and password == "password@123":
-            # Store additional information in session state
+        if user_name.strip() and password == PASSWORD:
             st.session_state.logged_in = True
             st.session_state.user_name = user_name.strip()
             st.session_state.account_type = account_type
             st.session_state.email = email.strip()
             st.session_state.prediction_type = prediction_type
-            st.experimental_rerun()  # Refresh to show main page
+            st.experimental_rerun()
+        elif not user_name.strip():
+            st.error("Name cannot be empty.")
         else:
-            st.error("Invalid login credentials. Please check your name and password.")
+            st.error("Incorrect password.")
 
 # Customer Feedback Data
 positive_feedback = [
@@ -83,14 +86,15 @@ negative_feedback = [
     "Not enough transparency in pricing."
 ]
 
-# Function to display feedback
+# Display Feedback Function with Bank Suggestions
 def display_feedback(prediction):
     if prediction == 1:  # Customer likely to attrit (Churn)
-        # More negative feedback with fewer positive
         feedback_to_show = random.sample(negative_feedback, 3) + random.sample(positive_feedback, 1)
         st.subheader("Customer Sentiment Insights (Churn Prediction)")
+        st.markdown("### *Bank Suggestions:*")
+        st.write("- We are committed to improving our response time.")
+        st.write("- New reward plans will be introduced to enhance customer experience.")
     else:  # Customer unlikely to attrit (Stay)
-        # More positive feedback with fewer negative
         feedback_to_show = random.sample(positive_feedback, 3) + random.sample(negative_feedback, 1)
         st.subheader("Customer Sentiment Insights (Stay Prediction)")
 
@@ -98,7 +102,7 @@ def display_feedback(prediction):
     for feedback in feedback_to_show:
         st.write(f"- {feedback}")
 
-# File Upload and Processing for Group Prediction
+# File Upload and Processing for Group Prediction with Pie Chart
 def process_uploaded_file(uploaded_file):
     df = pd.read_csv(uploaded_file)
     required_columns = [
@@ -118,15 +122,14 @@ def process_uploaded_file(uploaded_file):
         return None
 
     df = df[required_columns]
-
     predictions = best_rf_model.predict(df)
+
     attrit_count = sum(predictions)
     stay_count = len(predictions) - attrit_count
 
-    # Pie Chart for Group Prediction
     fig, ax = plt.subplots()
-    ax.pie([stay_count, attrit_count], labels=["Stay", "Attrit"], autopct='%1.1f%%', colors=['green', 'red'])
-    ax.set_title("Customer Prediction Distribution")
+    ax.pie([stay_count, attrit_count], labels=["Stay", "Attrit"], autopct='%1.1f%%', colors=["lightgreen", "lightcoral"])
+    ax.set_title("Customer Attrition Distribution")
     st.pyplot(fig)
 
     for idx, prediction in enumerate(predictions):
@@ -138,7 +141,6 @@ def main_page():
     st.title("Customer Attrition Prediction")
     st.sidebar.header(f"Welcome, {st.session_state.user_name}")
 
-    # Sidebar Inputs
     st.sidebar.header('Prediction Type: ' + st.session_state.prediction_type)
     if st.session_state.prediction_type == "Single":
         # Individual customer input fields
