@@ -10,17 +10,33 @@ if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "user_name" not in st.session_state:
     st.session_state.user_name = ""
+if "account_type" not in st.session_state:
+    st.session_state.account_type = ""
+if "email" not in st.session_state:
+    st.session_state.email = ""
 
 # Login Page
 def login_page():
     st.markdown("<h1 style='text-align: center;'>Customer <span style='color: red;'>Attrition </span> - Login</h1>", unsafe_allow_html=True)
+    
+    # User Name
     user_name = st.text_input("Enter your name:")
+    
+    # Account Type: Saving or Current
+    account_type = st.selectbox("Select Account Type", ["Saving", "Current"])
+    
+    # Email Address (optional)
+    email = st.text_input("Enter your email (optional):")
+    
     login_button = st.button("Log In")
 
     if login_button:
         if user_name.strip():
+            # Store additional information in session state
             st.session_state.logged_in = True
             st.session_state.user_name = user_name.strip()
+            st.session_state.account_type = account_type
+            st.session_state.email = email.strip()
             st.experimental_rerun()  # Refresh to show main page
         else:
             st.error("Name cannot be empty.")
@@ -92,7 +108,6 @@ def main_page():
         else:
             st.markdown(f"### Prediction: Customer is unlikely to attrit ❌")
             st.subheader("Non-Attrition Insights:")
-            # Add additional non-attrition insights here if needed
 
 # Run the app
 if not st.session_state.logged_in:
