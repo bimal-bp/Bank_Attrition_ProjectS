@@ -85,38 +85,29 @@ def display_feedback(prediction):
 def process_uploaded_file(uploaded_file):
     # Read the uploaded file into a pandas DataFrame
     df = pd.read_csv(uploaded_file)
-    
-    # Ensure required columns are in the file (this should match your input features)
-    required_columns = [
-        "Customer_Age", "Credit_Limit", "Total_Transactions_Count", "Total_Transaction_Amount",
-        "Inactive_Months_12_Months", "Transaction_Count_Change_Q4_Q1", "Total_Products_Used",
-        "Average_Credit_Utilization", "Customer_Contacts_12_Months", "Transaction_Amount_Change_Q4_Q1",
-        "Months_as_Customer", "Education", "Income"
-    ]
-    
-    for col in required_columns:
-        if col not in df.columns:
-            st.error(f"Missing required column: {col}")
-            return None
 
-    # Map categorical variables (Education and Income) to one-hot encoded columns
-    df["College"] = df["Education"].apply(lambda x: 1 if x == "College" else 0)
-    df["Doctorate"] = df["Education"].apply(lambda x: 1 if x == "Doctorate" else 0)
-    df["Graduate"] = df["Education"].apply(lambda x: 1 if x == "Graduate" else 0)
-    df["High School"] = df["Education"].apply(lambda x: 1 if x == "High School" else 0)
-    df["Post-Graduate"] = df["Education"].apply(lambda x: 1 if x == "Post-Graduate" else 0)
-    df["Uneducated"] = df["Education"].apply(lambda x: 1 if x == "Uneducated" else 0)
-    
-    df["$120K +"] = df["Income"].apply(lambda x: 1 if x == "$120K +" else 0)
-    df["$40K - $60K"] = df["Income"].apply(lambda x: 1 if x == "$40K - $60K" else 0)
-    df["$60K - $80K"] = df["Income"].apply(lambda x: 1 if x == "$60K - $80K" else 0)
-    df["$80K - $120K"] = df["Income"].apply(lambda x: 1 if x == "$80K - $120K" else 0)
-    df["Less than $40K"] = df["Income"].apply(lambda x: 1 if x == "Less than $40K" else 0)
-    
-    # Select only the relevant columns
+    # Ensure required columns are in the file
+    required_columns = [
+        'Customer_Age', 'Credit_Limit', 'Total_Transactions_Count',
+        'Total_Transaction_Amount', 'Inactive_Months_12_Months',
+        'Transaction_Count_Change_Q4_Q1', 'Total_Products_Used',
+        'Average_Credit_Utilization', 'Customer_Contacts_12_Months',
+        'Transaction_Amount_Change_Q4_Q1', 'Months_as_Customer',
+        'College', 'Doctorate', 'Graduate', 'High School', 'Post-Graduate',
+        'Uneducated', '$120K +', '$40K - $60K', '$60K - $80K', '$80K - $120K',
+        'Less than $40K'
+    ]
+
+    # Check for missing columns
+    missing_columns = [col for col in required_columns if col not in df.columns]
+    if missing_columns:
+        st.error(f"Missing required columns: {', '.join(missing_columns)}")
+        return None
+
+    # Drop any irrelevant columns (e.g., 'Churn_Flag' if it's not part of the input)
     df = df[required_columns]
 
-    # Predictions
+    # Make predictions
     predictions = best_rf_model.predict(df)
 
     # Show predictions for each customer
