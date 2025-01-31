@@ -21,13 +21,13 @@ def login_page():
         if user_name.strip():
             st.session_state.logged_in = True
             st.session_state.user_name = user_name.strip()
-            st.experimental_rerun()
+            st.experimental_rerun()  # Refresh to show main page
         else:
             st.error("Name cannot be empty.")
 
 # Main App Page
 def main_page():
-    st.title(f"Customer Attrition Prediction")
+    st.title("Customer Attrition Prediction")
     st.sidebar.header(f"Welcome, {st.session_state.user_name}")
 
     # Sidebar Inputs
@@ -79,7 +79,7 @@ def main_page():
     # Prediction
     if st.sidebar.button("Predict"):
         prediction = best_rf_model.predict(input_df)
-        
+
         if prediction[0] == 1:
             st.markdown(f"### Prediction: Customer is likely to attrit ✅")
             st.subheader("Attrition Risk Insights:")
@@ -92,9 +92,10 @@ def main_page():
         else:
             st.markdown(f"### Prediction: Customer is unlikely to attrit ❌")
             st.subheader("Non-Attrition Insights:")
+            # Add additional non-attrition insights here if needed
 
 # Run the app
 if not st.session_state.logged_in:
     login_page()
 else:
-    main_page()
+    main_page()
