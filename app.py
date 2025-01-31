@@ -148,14 +148,14 @@ def main_page():
             st.write(f"- *Total Transactions Count:* {total_transactions_count}")
             st.write(f"- *Average Credit Utilization:* {average_credit_utilization}")
             st.write(f"- *Customer Contacts in 12 Months:* {customer_contacts_12_months}")
-            st.session_state.prediction = 1
+            st.session_state.prediction = 1  # Store prediction
         else:
             st.markdown(f"### Prediction: Customer is unlikely to attrit ❌")
             st.write("Customer will stay.")
             st.subheader("Non-Attrition Insights:")
-            st.session_state.prediction = 0
+            st.session_state.prediction = 0  # Store prediction
 
-        # Show Feedback Button
+        # Show Feedback Button (Ensure it's triggered after prediction)
         feedback_button = st.button("See Customer Feedback Insights")
         if feedback_button:
             display_feedback(st.session_state.prediction)
