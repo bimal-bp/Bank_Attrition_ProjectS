@@ -13,6 +13,10 @@ if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "user_name" not in st.session_state:
     st.session_state.user_name = ""
+if "user_age" not in st.session_state:
+    st.session_state.user_age = 0
+if "account_type" not in st.session_state:
+    st.session_state.account_type = ""
 
 # Function for input preprocessing
 def preprocess_inputs(input_df):
@@ -20,29 +24,33 @@ def preprocess_inputs(input_df):
     scaled_data = scaler.fit_transform(input_df)
     return scaled_data
 
-# Login Page with password authentication
+# Simplified Login Page
 def login_page():
     st.markdown("<h1 style='text-align: center;'>Customer <span style='color: red;'>Attrition</span> - Login</h1>", unsafe_allow_html=True)
     user_name = st.text_input("Enter your name:")
-    password = st.text_input("Enter your password:", type="password")
+    user_age = st.number_input("Enter your age:", min_value=18, max_value=100, value=30)
+    account_type = st.selectbox("Select Account Type:", ["Saving", "Current"])
+
     login_button = st.button("Log In")
 
     if login_button:
-        if user_name.strip() and password == "secure_password":  # Replace with secure check
+        if user_name.strip():
             st.session_state.logged_in = True
             st.session_state.user_name = user_name.strip()
+            st.session_state.user_age = user_age
+            st.session_state.account_type = account_type
             st.experimental_rerun()
         else:
-            st.error("Invalid username or password.")
+            st.error("Please enter your name.")
 
 # Main App Page
 def main_page():
     st.title(f"Customer Attrition Prediction")
-    st.sidebar.header(f"Welcome, {st.session_state.user_name}")
+    st.sidebar.header(f"Welcome, {st.session_state.user_name} ({st.session_state.user_age} years old, {st.session_state.account_type} Account)")
 
     # Sidebar Inputs
     st.sidebar.header('Input Data')
-    customer_age = st.sidebar.number_input("Customer Age", min_value=18, max_value=100, value=30)
+    customer_age = st.sidebar.number_input("Customer Age", min_value=18, max_value=100, value=st.session_state.user_age)
     credit_limit = st.sidebar.number_input("Credit Limit", min_value=0, value=7000)
     total_transactions_count = st.sidebar.number_input("Total Transactions Count", min_value=0, value=50)
     total_transaction_amount = st.sidebar.number_input("Total Transaction Amount", min_value=0, value=5000)
