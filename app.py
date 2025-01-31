@@ -29,11 +29,11 @@ def login_page():
     # User Name
     user_name = st.text_input("Enter your name:")
 
-    # Account Type: Saving or Current
-    account_type = st.selectbox("Select Account Type", ["Saving", "Current"])
-
     # Email Address (optional)
     email = st.text_input("Enter your email (optional):")
+
+    # Account Type: Saving or Current
+    account_type = st.selectbox("Select Account Type", ["Saving", "Current"])
 
     # Inquiry on prediction type (Single or Group)
     st.markdown("<h3 style='color: green;'>Which type of prediction would you like to make?</h3>", unsafe_allow_html=True)
@@ -42,6 +42,7 @@ def login_page():
         index=["Single", "Group"].index(st.session_state.prediction_type)
     )
 
+    # Password Input
     password = st.text_input("Enter the password:", type="password")
 
     login_button = st.button("Log In")
@@ -193,11 +194,16 @@ def main_page():
 
             if prediction[0] == 1:
                 st.markdown(f"### Prediction: Customer is likely to attrit ✅")
-                st.write("Customer will leave.")
-                display_feedback(prediction[0])
+                st.subheader("Attrition Risk Insights:")
+                st.write(f"- *Inactive Months (12 months):* {inactive_months_12_months} months")
+                st.write(f"- *Transaction Amount Change (Q4-Q1):* {transaction_amount_change_q4_q1}")
+                st.write(f"- *Total Products Used:* {total_products_used}")
+                st.write(f"- *Total Transactions Count:* {total_transactions_count}")
+                st.write(f"- *Average Credit Utilization:* {average_credit_utilization}")
+                st.write(f"- *Customer Contacts in 12 Months:* {customer_contacts_12_months}")
             else:
                 st.markdown(f"### Prediction: Customer is unlikely to attrit ❌")
-                st.write("Customer will stay.")
+                st.subheader("Non-Attrition Insights:")
                 display_feedback(prediction[0])
 
     elif st.session_state.prediction_type == "Group":
