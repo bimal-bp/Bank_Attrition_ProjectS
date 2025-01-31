@@ -154,12 +154,14 @@ def main_page():
             st.write(f"- *Total Transactions Count:* {total_transactions_count}")
             st.write(f"- *Average Credit Utilization:* {average_credit_utilization}")
             st.write(f"- *Customer Contacts in 12 Months:* {customer_contacts_12_months}")
-            display_feedback("Likely to Churn", st.session_state.user_name)
+            
+            # Button to Navigate to Customer Feedback Page
+            st.button("See Customer Feedback Insights", on_click=customer_feedback_page)
+
         else:
             st.markdown(f"### Prediction: Customer is unlikely to attrit ❌")
             st.write("Customer will stay.")
             st.subheader("Non-Attrition Insights:")
-            display_feedback("Likely to Stay", st.session_state.user_name)
 
     # Button to Navigate to Customer Feedback Page
     if st.button("See Customer Feedback Insights"):
