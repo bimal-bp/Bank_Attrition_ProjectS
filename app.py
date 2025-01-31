@@ -2,6 +2,7 @@ import random
 import streamlit as st
 import pandas as pd
 import joblib
+import matplotlib.pyplot as plt
 
 # Load the trained model
 best_rf_model = joblib.load('best_rf_model.pkl')
@@ -31,9 +32,6 @@ def login_page():
     # Email Address (optional)
     email = st.text_input("Enter your email (optional):")
 
-    # Password
-    password = st.text_input("Enter your password:", type="password")
-
     # Inquiry on prediction type (Single or Group)
     st.markdown("<h3 style='color: green;'>Which type of prediction would you like to make?</h3>", unsafe_allow_html=True)
     prediction_type = st.selectbox(
@@ -45,16 +43,13 @@ def login_page():
 
     if login_button:
         if user_name.strip():
-            if password == "password@123":
-                # Store additional information in session state
-                st.session_state.logged_in = True
-                st.session_state.user_name = user_name.strip()
-                st.session_state.account_type = account_type
-                st.session_state.email = email.strip()
-                st.session_state.prediction_type = prediction_type
-                st.experimental_rerun()  # Refresh to show main page
-            else:
-                st.error("Incorrect password. Please try again.")
+            # Store additional information in session state
+            st.session_state.logged_in = True
+            st.session_state.user_name = user_name.strip()
+            st.session_state.account_type = account_type
+            st.session_state.email = email.strip()
+            st.session_state.prediction_type = prediction_type
+            st.experimental_rerun()  # Refresh to show main page
         else:
             st.error("Name cannot be empty.")
 
@@ -85,21 +80,18 @@ negative_feedback = [
     "Not enough transparency in pricing."
 ]
 
-
+# Display customer feedback based on prediction
 def display_feedback(prediction):
     if prediction == 1:  # Customer likely to attrit (Churn)
-        # More negative feedback with fewer positive
         feedback_to_show = random.sample(negative_feedback, 3) + random.sample(positive_feedback, 1)
         st.subheader("Customer Sentiment Insights (Churn Prediction)")
     else:  # Customer unlikely to attrit (Stay)
-        # More positive feedback with fewer negative
         feedback_to_show = random.sample(positive_feedback, 3) + random.sample(negative_feedback, 1)
         st.subheader("Customer Sentiment Insights (Stay Prediction)")
 
     st.markdown("### *Customer Feedback:*")
     for feedback in feedback_to_show:
         st.write(f"- {feedback}")
-
 
 # File Upload and Processing for Group Prediction
 def process_uploaded_file(uploaded_file):
@@ -124,10 +116,32 @@ def process_uploaded_file(uploaded_file):
 
     predictions = best_rf_model.predict(df)
 
+    # Display predictions and feedback
+    stay_count = 0
+    attrit_count = 0
+
     for idx, prediction in enumerate(predictions):
         st.write(f"Customer {idx + 1} Prediction: {'Attrit' if prediction == 1 else 'Stay'}")
         display_feedback(prediction)
 
+        # Count predictions for the pie chart
+        if prediction == 1:
+            attrit_count += 1
+        else:
+            stay_count += 1
+
+    # Plot Pie Chart
+    labels = ['Stay', 'Attrit']
+    sizes = [stay_count, attrit_count]
+    colors = ['#66b3ff', '#ff9999']
+    explode = (0.1, 0)  # explode 1st slice
+
+    fig1, ax1 = plt.subplots()
+    ax1.pie(sizes, explode=explode, labels=labels, colors=colors,
+            autopct='%1.1f%%', shadow=True, startangle=140)
+    ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+
+    st.pyplot(fig1)
 
 # Main App Page
 def main_page():
