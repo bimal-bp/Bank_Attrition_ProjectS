@@ -16,7 +16,33 @@ if "account_type" not in st.session_state:
 if "email" not in st.session_state:
     st.session_state.email = ""
 
-# Customer Feedback Lists
+# Login Page
+def login_page():
+    st.markdown("<h1 style='text-align: center;'>Customer <span style='color: red;'>Attrition </span> - Login</h1>", unsafe_allow_html=True)
+    
+    # User Name
+    user_name = st.text_input("Enter your name:")
+    
+    # Account Type: Saving or Current
+    account_type = st.selectbox("Select Account Type", ["Saving", "Current"])
+    
+    # Email Address (optional)
+    email = st.text_input("Enter your email (optional):")
+    
+    login_button = st.button("Log In")
+
+    if login_button:
+        if user_name.strip():
+            # Store additional information in session state
+            st.session_state.logged_in = True
+            st.session_state.user_name = user_name.strip()
+            st.session_state.account_type = account_type
+            st.session_state.email = email.strip()
+            st.experimental_rerun()  # Refresh to show main page
+        else:
+            st.error("Name cannot be empty.")
+
+# Customer Feedback Data
 positive_feedback = [
     "Excellent customer service and great support!",
     "I'm extremely satisfied with the features offered.",
@@ -43,13 +69,12 @@ negative_feedback = [
     "Not enough transparency in pricing."
 ]
 
-# Display Feedback Function
 def display_feedback(prediction, customer_name):
     if prediction == "Likely to Stay":
-        feedback_to_show = random.sample(positive_feedback, 3)  # Show only positive feedback
+        feedback_to_show = random.sample(positive_feedback, 2) + random.sample(negative_feedback, 1)
         st.subheader("Customer Sentiment Insights (Stay Prediction)")
     else:
-        feedback_to_show = random.sample(negative_feedback, 3)  # Show only negative feedback
+        feedback_to_show = random.sample(negative_feedback, 2) + random.sample(positive_feedback, 1)
         st.subheader("Customer Sentiment Insights (Churn Prediction)")
 
     st.markdown("### **Customer Feedback:**")
@@ -57,36 +82,12 @@ def display_feedback(prediction, customer_name):
         st.write(f"- {feedback}")
 
     # Check feedback type and display customer feedback attribution
-    if prediction == "Likely to Stay":
-        st.write(f"Positive feedback from customer: {customer_name}")
-    else:
+    negative_count = sum([1 for fb in feedback_to_show if fb in negative_feedback])
+
+    if negative_count == 2:
         st.write(f"Negative feedback from customer: {customer_name}")
-
-# Login Page
-def login_page():
-    st.markdown("<h1 style='text-align: center;'>Customer <span style='color: red;'>Attrition </span> - Login</h1>", unsafe_allow_html=True)
-    
-    # User Name
-    user_name = st.text_input("Enter your name:")
-    
-    # Account Type: Saving or Current
-    account_type = st.selectbox("Select Account Type", ["Saving", "Current"])
-    
-    # Email Address (optional)
-    email = st.text_input("Enter your email (optional):")
-    
-    login_button = st.button("Log In")
-
-    if login_button:
-        if user_name.strip():
-            # Store additional information in session state
-            st.session_state.logged_in = True
-            st.session_state.user_name = user_name.strip()
-            st.session_state.account_type = account_type
-            st.session_state.email = email.strip()
-            st.experimental_rerun()  # Refresh to show main page
-        else:
-            st.error("Name cannot be empty.")
+    else:
+        st.write(f"Positive feedback from customer: {customer_name}")
 
 # Main App Page
 def main_page():
@@ -145,6 +146,7 @@ def main_page():
 
         if prediction[0] == 1:
             st.markdown(f"### Prediction: Customer is likely to attrit ✅")
+            st.write("Customer will leave.")
             st.subheader("Attrition Risk Insights:")
             st.write(f"- *Inactive Months (12 months):* {inactive_months_12_months} months")
             st.write(f"- *Transaction Amount Change (Q4-Q1):* {transaction_amount_change_q4_q1}")
@@ -152,18 +154,11 @@ def main_page():
             st.write(f"- *Total Transactions Count:* {total_transactions_count}")
             st.write(f"- *Average Credit Utilization:* {average_credit_utilization}")
             st.write(f"- *Customer Contacts in 12 Months:* {customer_contacts_12_months}")
-            # Display Churn Prediction Feedback
             display_feedback("Likely to Churn", st.session_state.user_name)
         else:
             st.markdown(f"### Prediction: Customer is unlikely to attrit ❌")
+            st.write("Customer will stay.")
             st.subheader("Non-Attrition Insights:")
-            st.write(f"- *Inactive Months (12 months):* {inactive_months_12_months} months")
-            st.write(f"- *Transaction Amount Change (Q4-Q1):* {transaction_amount_change_q4_q1}")
-            st.write(f"- *Total Products Used:* {total_products_used}")
-            st.write(f"- *Total Transactions Count:* {total_transactions_count}")
-            st.write(f"- *Average Credit Utilization:* {average_credit_utilization}")
-            st.write(f"- *Customer Contacts in 12 Months:* {customer_contacts_12_months}")
-            # Display Stay Prediction Feedback
             display_feedback("Likely to Stay", st.session_state.user_name)
 
 # Run the app
