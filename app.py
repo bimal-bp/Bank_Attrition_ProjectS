@@ -155,8 +155,9 @@ def main_page():
             st.subheader("Non-Attrition Insights:")
             st.session_state.prediction = 0
 
-        # Button to Navigate to Customer Feedback Page (Placed below prediction)
-        if st.button("See Customer Feedback Insights"):
+        # Show Feedback Button
+        feedback_button = st.button("See Customer Feedback Insights")
+        if feedback_button:
             display_feedback(st.session_state.prediction)
 
 # App Navigation
