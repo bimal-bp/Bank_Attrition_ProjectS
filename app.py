@@ -15,6 +15,8 @@ if "account_type" not in st.session_state:
     st.session_state.account_type = ""
 if "email" not in st.session_state:
     st.session_state.email = ""
+if "prediction_done" not in st.session_state:
+    st.session_state.prediction_done = False
 
 # Login Page
 def login_page():
@@ -144,6 +146,8 @@ def main_page():
     if st.sidebar.button("Predict"):
         prediction = best_rf_model.predict(input_df)
 
+        st.session_state.prediction_done = True  # Set flag to show feedback button
+
         if prediction[0] == 1:
             st.markdown(f"### Prediction: Customer is likely to attrit ✅")
             st.write("Customer will leave.")
@@ -154,16 +158,13 @@ def main_page():
             st.write(f"- *Total Transactions Count:* {total_transactions_count}")
             st.write(f"- *Average Credit Utilization:* {average_credit_utilization}")
             st.write(f"- *Customer Contacts in 12 Months:* {customer_contacts_12_months}")
-            
-            # Button to Navigate to Customer Feedback Page
-            st.button("See Customer Feedback Insights", on_click=customer_feedback_page)
-
         else:
             st.markdown(f"### Prediction: Customer is unlikely to attrit ❌")
             st.write("Customer will stay.")
             st.subheader("Non-Attrition Insights:")
 
-    # Button to Navigate to Customer Feedback Page
+# Show customer feedback button after prediction
+if st.session_state.prediction_done:
     if st.button("See Customer Feedback Insights"):
         customer_feedback_page()
 
