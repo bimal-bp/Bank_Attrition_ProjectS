@@ -29,11 +29,11 @@ def login_page():
     # User Name
     user_name = st.text_input("Enter your name:")
 
-    # Email Address (optional)
-    email = st.text_input("Enter your email (optional):")
-
     # Account Type: Saving or Current
     account_type = st.selectbox("Select Account Type", ["Saving", "Current"])
+
+    # Email Address (optional)
+    email = st.text_input("Enter your email (optional):")
 
     # Inquiry on prediction type (Single or Group)
     st.markdown("<h3 style='color: green;'>Which type of prediction would you like to make?</h3>", unsafe_allow_html=True)
@@ -42,7 +42,6 @@ def login_page():
         index=["Single", "Group"].index(st.session_state.prediction_type)
     )
 
-    # Password Input
     password = st.text_input("Enter the password:", type="password")
 
     login_button = st.button("Log In")
@@ -95,13 +94,46 @@ def display_feedback(prediction):
         st.markdown("### *Bank Suggestions:*")
         st.write("- We are committed to improving our response time.")
         st.write("- New reward plans will be introduced to enhance customer experience.")
+        st.write("- Offering personalized customer support to address concerns.")
+        st.write("- Improved communication channels for faster issue resolution.")
     else:  # Customer unlikely to attrit (Stay)
         feedback_to_show = random.sample(positive_feedback, 3) + random.sample(negative_feedback, 1)
         st.subheader("Customer Sentiment Insights (Stay Prediction)")
+        st.markdown("### *Bank Suggestions:*")
+        st.write("- We appreciate your continued loyalty to our services.")
+        st.write("- Introducing loyalty rewards and new offers to keep you satisfied.")
+        st.write("- Regular updates on new product offerings.")
+        st.write("- Transparent pricing and clear communication for a better experience.")
 
     st.markdown("### *Customer Feedback:*")
     for feedback in feedback_to_show:
         st.write(f"- {feedback}")
+
+
+# Prediction
+def predict_customer(input_df):
+    prediction = best_rf_model.predict(input_df)
+    
+    if prediction[0] == 1:
+        st.markdown(f"### Prediction: Customer is likely to attrit ✅")
+        st.subheader("Attrition Risk Insights:")
+        st.write(f"- *Inactive Months (12 months):* {inactive_months_12_months} months")
+        st.write(f"- *Transaction Amount Change (Q4-Q1):* {transaction_amount_change_q4_q1}")
+        st.write(f"- *Total Products Used:* {total_products_used}")
+        st.write(f"- *Total Transactions Count:* {total_transactions_count}")
+        st.write(f"- *Average Credit Utilization:* {average_credit_utilization}")
+        st.write(f"- *Customer Contacts in 12 Months:* {customer_contacts_12_months}")
+        display_feedback(prediction[0])
+    else:
+        st.markdown(f"### Prediction: Customer is unlikely to attrit ❌")
+        st.subheader("Non-Attrition Insights:")
+        st.write(f"- *Inactive Months (12 months):* {inactive_months_12_months} months")
+        st.write(f"- *Transaction Amount Change (Q4-Q1):* {transaction_amount_change_q4_q1}")
+        st.write(f"- *Total Products Used:* {total_products_used}")
+        st.write(f"- *Total Transactions Count:* {total_transactions_count}")
+        st.write(f"- *Average Credit Utilization:* {average_credit_utilization}")
+        st.write(f"- *Customer Contacts in 12 Months:* {customer_contacts_12_months}")
+        display_feedback(prediction[0])
 
 # File Upload and Processing for Group Prediction with Pie Chart
 def process_uploaded_file(uploaded_file):
@@ -190,21 +222,7 @@ def main_page():
         input_df = pd.DataFrame(input_data)
 
         if st.sidebar.button("Predict"):
-            prediction = best_rf_model.predict(input_df)
-
-            if prediction[0] == 1:
-                st.markdown(f"### Prediction: Customer is likely to attrit ✅")
-                st.subheader("Attrition Risk Insights:")
-                st.write(f"- *Inactive Months (12 months):* {inactive_months_12_months} months")
-                st.write(f"- *Transaction Amount Change (Q4-Q1):* {transaction_amount_change_q4_q1}")
-                st.write(f"- *Total Products Used:* {total_products_used}")
-                st.write(f"- *Total Transactions Count:* {total_transactions_count}")
-                st.write(f"- *Average Credit Utilization:* {average_credit_utilization}")
-                st.write(f"- *Customer Contacts in 12 Months:* {customer_contacts_12_months}")
-            else:
-                st.markdown(f"### Prediction: Customer is unlikely to attrit ❌")
-                st.subheader("Non-Attrition Insights:")
-                display_feedback(prediction[0])
+            predict_customer(input_df)
 
     elif st.session_state.prediction_type == "Group":
         # File upload for group predictions
