@@ -21,16 +21,19 @@ if "prediction_type" not in st.session_state:
 # Login Page
 def login_page():
     st.markdown("<h1 style='text-align: center;'>Customer <span style='color: red;'>Attrition </span> - Login</h1>", unsafe_allow_html=True)
-    
+
     # User Name
     user_name = st.text_input("Enter your name:")
-    
+
     # Account Type: Saving or Current
     account_type = st.selectbox("Select Account Type", ["Saving", "Current"])
-    
+
     # Email Address (optional)
     email = st.text_input("Enter your email (optional):")
-    
+
+    # Password
+    password = st.text_input("Enter your password:", type="password")
+
     # Inquiry on prediction type (Single or Group)
     st.markdown("<h3 style='color: green;'>Which type of prediction would you like to make?</h3>", unsafe_allow_html=True)
     prediction_type = st.selectbox(
@@ -42,13 +45,16 @@ def login_page():
 
     if login_button:
         if user_name.strip():
-            # Store additional information in session state
-            st.session_state.logged_in = True
-            st.session_state.user_name = user_name.strip()
-            st.session_state.account_type = account_type
-            st.session_state.email = email.strip()
-            st.session_state.prediction_type = prediction_type
-            st.experimental_rerun()  # Refresh to show main page
+            if password == "password@123":
+                # Store additional information in session state
+                st.session_state.logged_in = True
+                st.session_state.user_name = user_name.strip()
+                st.session_state.account_type = account_type
+                st.session_state.email = email.strip()
+                st.session_state.prediction_type = prediction_type
+                st.experimental_rerun()  # Refresh to show main page
+            else:
+                st.error("Incorrect password. Please try again.")
         else:
             st.error("Name cannot be empty.")
 
@@ -79,6 +85,7 @@ negative_feedback = [
     "Not enough transparency in pricing."
 ]
 
+
 def display_feedback(prediction):
     if prediction == 1:  # Customer likely to attrit (Churn)
         # More negative feedback with fewer positive
@@ -92,6 +99,7 @@ def display_feedback(prediction):
     st.markdown("### *Customer Feedback:*")
     for feedback in feedback_to_show:
         st.write(f"- {feedback}")
+
 
 # File Upload and Processing for Group Prediction
 def process_uploaded_file(uploaded_file):
@@ -119,6 +127,7 @@ def process_uploaded_file(uploaded_file):
     for idx, prediction in enumerate(predictions):
         st.write(f"Customer {idx + 1} Prediction: {'Attrit' if prediction == 1 else 'Stay'}")
         display_feedback(prediction)
+
 
 # Main App Page
 def main_page():
