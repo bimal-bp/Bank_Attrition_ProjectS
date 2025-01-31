@@ -15,6 +15,8 @@ if "account_type" not in st.session_state:
     st.session_state.account_type = ""
 if "email" not in st.session_state:
     st.session_state.email = ""
+if "prediction_type" not in st.session_state:
+    st.session_state.prediction_type = "Single"  # Default to Single
 
 # Login Page
 def login_page():
@@ -29,6 +31,13 @@ def login_page():
     # Email Address (optional)
     email = st.text_input("Enter your email (optional):")
     
+    # Inquiry on prediction type (Single or Group)
+    st.markdown("<h3 style='color: green;'>Which type of prediction would you like to make?</h3>", unsafe_allow_html=True)
+    prediction_type = st.selectbox(
+        "Choose prediction type", ["Single", "Group"],
+        index=["Single", "Group"].index(st.session_state.prediction_type)
+    )
+
     login_button = st.button("Log In")
 
     if login_button:
@@ -38,6 +47,7 @@ def login_page():
             st.session_state.user_name = user_name.strip()
             st.session_state.account_type = account_type
             st.session_state.email = email.strip()
+            st.session_state.prediction_type = prediction_type
             st.experimental_rerun()  # Refresh to show main page
         else:
             st.error("Name cannot be empty.")
@@ -116,10 +126,8 @@ def main_page():
     st.sidebar.header(f"Welcome, {st.session_state.user_name}")
 
     # Sidebar Inputs
-    st.sidebar.header('Prediction Type')
-    prediction_type = st.radio("Select Prediction Type", ["One Customer", "Group of Customers"])
-
-    if prediction_type == "One Customer":
+    st.sidebar.header('Prediction Type: ' + st.session_state.prediction_type)
+    if st.session_state.prediction_type == "Single":
         # Individual customer input fields
         customer_age = st.sidebar.number_input("Customer Age", min_value=18, max_value=100, value=30)
         credit_limit = st.sidebar.number_input("Credit Limit", min_value=0, value=7000)
@@ -177,10 +185,11 @@ def main_page():
                 st.write("Customer will stay.")
                 display_feedback(prediction[0])
 
-    elif prediction_type == "Group of Customers":
-        uploaded_file = st.sidebar.file_uploader("Upload a CSV file with customer data", type=["csv"])
+    elif st.session_state.prediction_type == "Group":
+        # File upload for group predictions
+        uploaded_file = st.sidebar.file_uploader("Upload Customer Data (CSV)", type="csv")
 
-        if uploaded_file:
+        if uploaded_file is not None:
             process_uploaded_file(uploaded_file)
 
 # App Navigation
