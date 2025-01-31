@@ -109,9 +109,17 @@ def display_feedback(prediction):
     for feedback in feedback_to_show:
         st.write(f"- {feedback}")
 
-
 # Prediction
 def predict_customer(input_df):
+    # Extract relevant values from input_df
+    inactive_months_12_months = input_df['Inactive_Months_12_Months'][0]
+    transaction_amount_change_q4_q1 = input_df['Transaction_Amount_Change_Q4_Q1'][0]
+    total_products_used = input_df['Total_Products_Used'][0]
+    total_transactions_count = input_df['Total_Transactions_Count'][0]
+    average_credit_utilization = input_df['Average_Credit_Utilization'][0]
+    customer_contacts_12_months = input_df['Customer_Contacts_12_Months'][0]
+    
+    # Predict using the trained model
     prediction = best_rf_model.predict(input_df)
     
     if prediction[0] == 1:
@@ -123,7 +131,7 @@ def predict_customer(input_df):
         st.write(f"- *Total Transactions Count:* {total_transactions_count}")
         st.write(f"- *Average Credit Utilization:* {average_credit_utilization}")
         st.write(f"- *Customer Contacts in 12 Months:* {customer_contacts_12_months}")
-        display_feedback(prediction[0])
+        display_feedback(prediction[0])  # Pass prediction to display feedback function
     else:
         st.markdown(f"### Prediction: Customer is unlikely to attrit ❌")
         st.subheader("Non-Attrition Insights:")
@@ -133,7 +141,7 @@ def predict_customer(input_df):
         st.write(f"- *Total Transactions Count:* {total_transactions_count}")
         st.write(f"- *Average Credit Utilization:* {average_credit_utilization}")
         st.write(f"- *Customer Contacts in 12 Months:* {customer_contacts_12_months}")
-        display_feedback(prediction[0])
+        display_feedback(prediction[0])  # Pass prediction to display feedback function
 
 # File Upload and Processing for Group Prediction with Pie Chart
 def process_uploaded_file(uploaded_file):
@@ -160,9 +168,11 @@ def process_uploaded_file(uploaded_file):
     attrit_count = sum(predictions)
     stay_count = len(predictions) - attrit_count
 
-    fig, ax = plt.subplots()
-    ax.pie([stay_count, attrit_count], labels=["Stay", "Attrit"], autopct='%1.1f%%', colors=["lightgreen", "lightcoral"])
-    ax.set_title("Customer Attrition Distribution")
+    # Plot Pie Chart with Styling
+    fig, ax = plt.subplots(figsize=(6, 6))
+    ax.pie([stay_count, attrit_count], labels=["Stay", "Attrit"], autopct='%1.1f%%', colors=["lightgreen", "lightcoral"],
+           startangle=90, wedgeprops={"edgecolor": "black", "linewidth": 1.5, "linestyle": "solid"})
+    ax.set_title("Customer Attrition Distribution", fontsize=14, fontweight="bold", color="darkblue")
     st.pyplot(fig)
 
     for idx, prediction in enumerate(predictions):
@@ -216,23 +226,19 @@ def main_page():
             "$40K - $60K": [1 if income == "$40K - $60K" else 0],
             "$60K - $80K": [1 if income == "$60K - $80K" else 0],
             "$80K - $120K": [1 if income == "$80K - $120K" else 0],
-            "Less than $40K": [1 if income == "Less than $40K" else 0],
+            "Less than $40K": [1 if income == "Less than $40K" else 0]
         }
 
         input_df = pd.DataFrame(input_data)
+        predict_customer(input_df)
 
-        if st.sidebar.button("Predict"):
-            predict_customer(input_df)
-
-    elif st.session_state.prediction_type == "Group":
-        # File upload for group predictions
-        uploaded_file = st.sidebar.file_uploader("Upload Customer Data (CSV)", type="csv")
-
+    else:  # For Group Prediction
+        uploaded_file = st.sidebar.file_uploader("Upload CSV file for Group Prediction", type=["csv"])
         if uploaded_file is not None:
             process_uploaded_file(uploaded_file)
 
-# App Navigation
-if not st.session_state.logged_in:
-    login_page()
-else:
+# Main
+if st.session_state.logged_in:
     main_page()
+else:
+    login_page()
