@@ -155,10 +155,8 @@ def main_page():
             st.subheader("Non-Attrition Insights:")
             st.session_state.prediction = 0  # Store prediction
 
-        # Show Feedback Button (Ensure it's triggered after prediction)
-        feedback_button = st.button("See Customer Feedback Insights")
-        if feedback_button:
-            display_feedback(st.session_state.prediction)
+        # Display Feedback Immediately after Prediction
+        display_feedback(st.session_state.prediction)
 
 # App Navigation
 if not st.session_state.logged_in:
