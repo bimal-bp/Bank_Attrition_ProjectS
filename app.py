@@ -15,8 +15,6 @@ if "account_type" not in st.session_state:
     st.session_state.account_type = ""
 if "email" not in st.session_state:
     st.session_state.email = ""
-if "prediction" not in st.session_state:
-    st.session_state.prediction = None
 
 # Login Page
 def login_page():
@@ -72,11 +70,13 @@ negative_feedback = [
 ]
 
 def display_feedback(prediction):
-    if prediction == 1:  # Customer likely to attrit
-        feedback_to_show = random.sample(positive_feedback, 2) + random.sample(negative_feedback, 1)
+    if prediction == 1:  # Customer likely to attrit (Churn)
+        # More negative feedback with fewer positive
+        feedback_to_show = random.sample(negative_feedback, 3) + random.sample(positive_feedback, 1)
         st.subheader("Customer Sentiment Insights (Churn Prediction)")
-    else:  # Customer unlikely to attrit
-        feedback_to_show = random.sample(negative_feedback, 2) + random.sample(positive_feedback, 1)
+    else:  # Customer unlikely to attrit (Stay)
+        # More positive feedback with fewer negative
+        feedback_to_show = random.sample(positive_feedback, 3) + random.sample(negative_feedback, 1)
         st.subheader("Customer Sentiment Insights (Stay Prediction)")
 
     st.markdown("### **Customer Feedback:**")
@@ -148,15 +148,19 @@ def main_page():
             st.write(f"- *Total Transactions Count:* {total_transactions_count}")
             st.write(f"- *Average Credit Utilization:* {average_credit_utilization}")
             st.write(f"- *Customer Contacts in 12 Months:* {customer_contacts_12_months}")
-            st.session_state.prediction = 1  # Store prediction
+            
+            # Button to Navigate to Customer Feedback Page
+            if st.button("See Customer Feedback Insights"):
+                display_feedback(prediction[0])  # Show feedback for churn prediction
+
         else:
             st.markdown(f"### Prediction: Customer is unlikely to attrit ❌")
             st.write("Customer will stay.")
             st.subheader("Non-Attrition Insights:")
-            st.session_state.prediction = 0  # Store prediction
 
-        # Display Feedback Immediately after Prediction
-        display_feedback(st.session_state.prediction)
+            # Button to Navigate to Customer Feedback Page
+            if st.button("See Customer Feedback Insights"):
+                display_feedback(prediction[0])  # Show feedback for stay prediction
 
 # App Navigation
 if not st.session_state.logged_in:
