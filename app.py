@@ -15,6 +15,8 @@ if "account_type" not in st.session_state:
     st.session_state.account_type = ""
 if "email" not in st.session_state:
     st.session_state.email = ""
+if "prediction" not in st.session_state:
+    st.session_state.prediction = None
 
 # Login Page
 def login_page():
@@ -69,25 +71,17 @@ negative_feedback = [
     "Not enough transparency in pricing."
 ]
 
-def display_feedback(prediction, customer_name):
-    if prediction == "Likely to Stay":
+def display_feedback(prediction):
+    if prediction == 1:  # Customer likely to attrit
         feedback_to_show = random.sample(positive_feedback, 2) + random.sample(negative_feedback, 1)
-        st.subheader("Customer Sentiment Insights (Stay Prediction)")
-    else:
-        feedback_to_show = random.sample(negative_feedback, 2) + random.sample(positive_feedback, 1)
         st.subheader("Customer Sentiment Insights (Churn Prediction)")
+    else:  # Customer unlikely to attrit
+        feedback_to_show = random.sample(negative_feedback, 2) + random.sample(positive_feedback, 1)
+        st.subheader("Customer Sentiment Insights (Stay Prediction)")
 
     st.markdown("### **Customer Feedback:**")
     for feedback in feedback_to_show:
         st.write(f"- {feedback}")
-
-    # Check feedback type and display customer feedback attribution
-    negative_count = sum([1 for fb in feedback_to_show if fb in negative_feedback])
-
-    if negative_count == 2:
-        st.write(f"Negative feedback from customer: {customer_name}")
-    else:
-        st.write(f"Positive feedback from customer: {customer_name}")
 
 # Main App Page
 def main_page():
@@ -154,26 +148,16 @@ def main_page():
             st.write(f"- *Total Transactions Count:* {total_transactions_count}")
             st.write(f"- *Average Credit Utilization:* {average_credit_utilization}")
             st.write(f"- *Customer Contacts in 12 Months:* {customer_contacts_12_months}")
-            
+            st.session_state.prediction = 1
         else:
             st.markdown(f"### Prediction: Customer is unlikely to attrit ❌")
             st.write("Customer will stay.")
             st.subheader("Non-Attrition Insights:")
+            st.session_state.prediction = 0
 
         # Button to Navigate to Customer Feedback Page (Placed below prediction)
         if st.button("See Customer Feedback Insights"):
-            customer_feedback_page()
-
-# Customer Feedback Insights Page
-def customer_feedback_page():
-    st.title("Customer Feedback Insights")
-
-    # Display General Customer Feedback
-    feedback_to_show = random.sample(positive_feedback, 2) + random.sample(negative_feedback, 1)
-    st.subheader("Customer Sentiment Insights")
-    st.markdown("### **Customer Feedback:**")
-    for feedback in feedback_to_show:
-        st.write(f"- {feedback}")
+            display_feedback(st.session_state.prediction)
 
 # App Navigation
 if not st.session_state.logged_in:
