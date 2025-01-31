@@ -1,9 +1,8 @@
 import streamlit as st
 import pandas as pd
 import joblib
-import matplotlib.pyplot as plt
+import random
 from sklearn.preprocessing import StandardScaler
-import numpy as np
 
 # Load the trained model
 best_rf_model = joblib.load('best_rf_model.pkl')
@@ -13,22 +12,60 @@ if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "user_name" not in st.session_state:
     st.session_state.user_name = ""
-if "user_age" not in st.session_state:
-    st.session_state.user_age = 0
 if "account_type" not in st.session_state:
     st.session_state.account_type = ""
 
-# Function for input preprocessing
-def preprocess_inputs(input_df):
-    scaler = StandardScaler()  # Assume the same scaler from training was saved
-    scaled_data = scaler.fit_transform(input_df)
-    return scaled_data
+# Positive and Negative Feedback Lists
+positive_feedback = [
+    "Excellent customer service and great support!",
+    "I'm extremely satisfied with the features offered.",
+    "The app is user-friendly and intuitive.",
+    "Timely communication from the service team.",
+    "Reliable and secure platform for transactions.",
+    "Quick response to queries and issues.",
+    "Very happy with the product offerings.",
+    "Affordable plans and great discounts.",
+    "Highly recommended for smooth operations.",
+    "A pleasant experience using the service."
+]
+
+negative_feedback = [
+    "Customer service response is too slow.",
+    "The platform crashes frequently.",
+    "Hidden charges are frustrating.",
+    "Difficult to navigate the website.",
+    "Long waiting times for support.",
+    "Billing issues need to be resolved.",
+    "Product availability is limited.",
+    "Lack of proper communication channels.",
+    "Refunds take too long to process.",
+    "Not enough transparency in pricing."
+]
+
+# Function to generate recommendations based on negative feedback
+def generate_recommendations(negative_comments):
+    recommendations = []
+    for comment in negative_comments:
+        if "response is too slow" in comment:
+            recommendations.append("Improve customer service response time.")
+        elif "platform crashes" in comment:
+            recommendations.append("Enhance platform stability and conduct regular maintenance.")
+        elif "hidden charges" in comment:
+            recommendations.append("Provide transparent pricing and clearly communicate service fees.")
+        elif "navigation" in comment:
+            recommendations.append("Redesign website for better user navigation.")
+        elif "support waiting times" in comment:
+            recommendations.append("Increase customer support staff to reduce waiting times.")
+        elif "billing issues" in comment:
+            recommendations.append("Implement automated billing issue resolution systems.")
+        else:
+            recommendations.append("General recommendation: Address customer pain points promptly.")
+    return recommendations
 
 # Simplified Login Page
 def login_page():
     st.markdown("<h1 style='text-align: center;'>Customer <span style='color: red;'>Attrition</span> - Login</h1>", unsafe_allow_html=True)
     user_name = st.text_input("Enter your name:")
-    user_age = st.number_input("Enter your age:", min_value=18, max_value=100, value=30)
     account_type = st.selectbox("Select Account Type:", ["Saving", "Current"])
 
     login_button = st.button("Log In")
@@ -37,7 +74,6 @@ def login_page():
         if user_name.strip():
             st.session_state.logged_in = True
             st.session_state.user_name = user_name.strip()
-            st.session_state.user_age = user_age
             st.session_state.account_type = account_type
             st.experimental_rerun()
         else:
@@ -46,11 +82,11 @@ def login_page():
 # Main App Page
 def main_page():
     st.title(f"Customer Attrition Prediction")
-    st.sidebar.header(f"Welcome, {st.session_state.user_name} ({st.session_state.user_age} years old, {st.session_state.account_type} Account)")
+    st.sidebar.header(f"Welcome, {st.session_state.user_name} ({st.session_state.account_type} Account)")
 
     # Sidebar Inputs
     st.sidebar.header('Input Data')
-    customer_age = st.sidebar.number_input("Customer Age", min_value=18, max_value=100, value=st.session_state.user_age)
+    customer_age = st.sidebar.number_input("Customer Age", min_value=18, max_value=100, value=30)
     credit_limit = st.sidebar.number_input("Credit Limit", min_value=0, value=7000)
     total_transactions_count = st.sidebar.number_input("Total Transactions Count", min_value=0, value=50)
     total_transaction_amount = st.sidebar.number_input("Total Transaction Amount", min_value=0, value=5000)
@@ -98,18 +134,42 @@ def main_page():
     if st.sidebar.button("Predict"):
         prediction = best_rf_model.predict(input_df)
 
-        if prediction[0] == 1:
-            st.markdown(f"### Prediction: Customer is likely to attrit ✅")
-            st.subheader("Attrition Risk Insights:")
-            st.write(f"- **Inactive Months (12 months):** {inactive_months_12_months} months")
-            st.write(f"- **Transaction Amount Change (Q4-Q1):** {transaction_amount_change_q4_q1}")
-            st.write(f"- **Total Products Used:** {total_products_used}")
-            st.write(f"- **Total Transactions Count:** {total_transactions_count}")
-            st.write(f"- **Average Credit Utilization:** {average_credit_utilization}")
-            st.write(f"- **Customer Contacts in 12 Months:** {customer_contacts_12_months}")
-        else:
-            st.markdown(f"### Prediction: Customer is unlikely to attrit ❌")
-            st.subheader("Non-Attrition Insights:")
+        # Displaying Customer Feedback based on prediction
+        display_feedback_and_recommendations(prediction[0])
+
+# Function to display feedback and recommendations
+def display_feedback_and_recommendations(prediction):
+    positive_feedback = [
+        "Excellent customer service and great support!",
+        "I'm extremely satisfied with the features offered.",
+        "The app is user-friendly and intuitive.",
+        "Timely communication from the service team.",
+        "Reliable and secure platform for transactions."
+    ]
+    negative_feedback = [
+        "Customer service response is too slow.",
+        "The platform crashes frequently.",
+        "Hidden charges are frustrating.",
+        "Difficult to navigate the website.",
+        "Long waiting times for support."
+    ]
+    
+    if prediction == 1:  # Likely to Attrit
+        feedback_to_show = random.sample(positive_feedback, 1) + random.sample(negative_feedback, 2)
+        st.subheader("Customer Sentiment Insights (Churn Prediction)")
+    else:  # Likely to Stay
+        feedback_to_show = random.sample(positive_feedback, 2) + random.sample(negative_feedback, 1)
+        st.subheader("Customer Sentiment Insights (Stay Prediction)")
+
+    st.markdown("### **Customer Feedback:**")
+    for feedback in feedback_to_show:
+        st.write(f"- {feedback}")
+
+    if prediction == 1:  # Likely to Churn
+        st.markdown("### **Recommended Actions for the Bank:**")
+        recommendations = generate_recommendations([fb for fb in feedback_to_show if fb in negative_feedback])
+        for rec in recommendations:
+            st.write(f"- {rec}")
 
 # Run the app
 if not st.session_state.logged_in:
