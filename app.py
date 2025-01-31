@@ -16,6 +16,52 @@ if "account_type" not in st.session_state:
 if "email" not in st.session_state:
     st.session_state.email = ""
 
+# Customer Feedback Lists
+positive_feedback = [
+    "Excellent customer service and great support!",
+    "I'm extremely satisfied with the features offered.",
+    "The app is user-friendly and intuitive.",
+    "Timely communication from the service team.",
+    "Reliable and secure platform for transactions.",
+    "Quick response to queries and issues.",
+    "Very happy with the product offerings.",
+    "Affordable plans and great discounts.",
+    "Highly recommended for smooth operations.",
+    "A pleasant experience using the service."
+]
+
+negative_feedback = [
+    "Customer service response is too slow.",
+    "The platform crashes frequently.",
+    "Hidden charges are frustrating.",
+    "Difficult to navigate the website.",
+    "Long waiting times for support.",
+    "Billing issues need to be resolved.",
+    "Product availability is limited.",
+    "Lack of proper communication channels.",
+    "Refunds take too long to process.",
+    "Not enough transparency in pricing."
+]
+
+# Display Feedback Function
+def display_feedback(prediction, customer_name):
+    if prediction == "Likely to Stay":
+        feedback_to_show = random.sample(positive_feedback, 3)  # Show only positive feedback
+        st.subheader("Customer Sentiment Insights (Stay Prediction)")
+    else:
+        feedback_to_show = random.sample(negative_feedback, 3)  # Show only negative feedback
+        st.subheader("Customer Sentiment Insights (Churn Prediction)")
+
+    st.markdown("### **Customer Feedback:**")
+    for feedback in feedback_to_show:
+        st.write(f"- {feedback}")
+
+    # Check feedback type and display customer feedback attribution
+    if prediction == "Likely to Stay":
+        st.write(f"Positive feedback from customer: {customer_name}")
+    else:
+        st.write(f"Negative feedback from customer: {customer_name}")
+
 # Login Page
 def login_page():
     st.markdown("<h1 style='text-align: center;'>Customer <span style='color: red;'>Attrition </span> - Login</h1>", unsafe_allow_html=True)
@@ -41,53 +87,6 @@ def login_page():
             st.experimental_rerun()  # Refresh to show main page
         else:
             st.error("Name cannot be empty.")
-
-# Customer Sentiment Feedback
-def display_feedback(prediction, customer_name):
-    positive_feedback = [
-        "Excellent customer service and great support!",
-        "I'm extremely satisfied with the features offered.",
-        "The app is user-friendly and intuitive.",
-        "Timely communication from the service team.",
-        "Reliable and secure platform for transactions.",
-        "Quick response to queries and issues.",
-        "Very happy with the product offerings.",
-        "Affordable plans and great discounts.",
-        "Highly recommended for smooth operations.",
-        "A pleasant experience using the service."
-    ]
-
-    negative_feedback = [
-        "Customer service response is too slow.",
-        "The platform crashes frequently.",
-        "Hidden charges are frustrating.",
-        "Difficult to navigate the website.",
-        "Long waiting times for support.",
-        "Billing issues need to be resolved.",
-        "Product availability is limited.",
-        "Lack of proper communication channels.",
-        "Refunds take too long to process.",
-        "Not enough transparency in pricing."
-    ]
-
-    if prediction == "Likely to Stay":
-        feedback_to_show = random.sample(positive_feedback, 1) + random.sample(negative_feedback, 2)
-        st.subheader("Customer Sentiment Insights (Stay Prediction)")
-    else:
-        feedback_to_show = random.sample(negative_feedback, 2) + random.sample(positive_feedback, 1)
-        st.subheader("Customer Sentiment Insights (Churn Prediction)")
-
-    st.markdown("### **Customer Feedback:**")
-    for feedback in feedback_to_show:
-        st.write(f"- {feedback}")
-
-    # Check feedback type and display customer feedback attribution
-    negative_count = sum([1 for fb in feedback_to_show if fb in negative_feedback])
-
-    if negative_count == 2:
-        st.write(f"Negative feedback from customer: {customer_name}")
-    else:
-        st.write(f"Positive feedback from customer: {customer_name}")
 
 # Main App Page
 def main_page():
@@ -153,11 +152,19 @@ def main_page():
             st.write(f"- *Total Transactions Count:* {total_transactions_count}")
             st.write(f"- *Average Credit Utilization:* {average_credit_utilization}")
             st.write(f"- *Customer Contacts in 12 Months:* {customer_contacts_12_months}")
-            display_feedback("Likely to Churn", st.session_state.user_name)  # Show feedback
+            # Display Churn Prediction Feedback
+            display_feedback("Likely to Churn", st.session_state.user_name)
         else:
             st.markdown(f"### Prediction: Customer is unlikely to attrit ❌")
             st.subheader("Non-Attrition Insights:")
-            display_feedback("Likely to Stay", st.session_state.user_name)  # Show feedback
+            st.write(f"- *Inactive Months (12 months):* {inactive_months_12_months} months")
+            st.write(f"- *Transaction Amount Change (Q4-Q1):* {transaction_amount_change_q4_q1}")
+            st.write(f"- *Total Products Used:* {total_products_used}")
+            st.write(f"- *Total Transactions Count:* {total_transactions_count}")
+            st.write(f"- *Average Credit Utilization:* {average_credit_utilization}")
+            st.write(f"- *Customer Contacts in 12 Months:* {customer_contacts_12_months}")
+            # Display Stay Prediction Feedback
+            display_feedback("Likely to Stay", st.session_state.user_name)
 
 # Run the app
 if not st.session_state.logged_in:
