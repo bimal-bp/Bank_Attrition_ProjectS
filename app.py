@@ -1,6 +1,9 @@
 import streamlit as st
 import pandas as pd
 import joblib
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
+import numpy as np
 
 # Load the trained model
 best_rf_model = joblib.load('best_rf_model.pkl')
@@ -11,19 +14,26 @@ if "logged_in" not in st.session_state:
 if "user_name" not in st.session_state:
     st.session_state.user_name = ""
 
-# Login Page
+# Function for input preprocessing
+def preprocess_inputs(input_df):
+    scaler = StandardScaler()  # Assume the same scaler from training was saved
+    scaled_data = scaler.fit_transform(input_df)
+    return scaled_data
+
+# Login Page with password authentication
 def login_page():
-    st.markdown("<h1 style='text-align: center;'>Customer <span style='color: red;'>Attrition </span> - Login</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center;'>Customer <span style='color: red;'>Attrition</span> - Login</h1>", unsafe_allow_html=True)
     user_name = st.text_input("Enter your name:")
+    password = st.text_input("Enter your password:", type="password")
     login_button = st.button("Log In")
 
     if login_button:
-        if user_name.strip():
+        if user_name.strip() and password == "secure_password":  # Replace with secure check
             st.session_state.logged_in = True
             st.session_state.user_name = user_name.strip()
             st.experimental_rerun()
         else:
-            st.error("Name cannot be empty.")
+            st.error("Invalid username or password.")
 
 # Main App Page
 def main_page():
@@ -79,7 +89,7 @@ def main_page():
     # Prediction
     if st.sidebar.button("Predict"):
         prediction = best_rf_model.predict(input_df)
-        
+
         if prediction[0] == 1:
             st.markdown(f"### Prediction: Customer is likely to attrit ✅")
             st.subheader("Attrition Risk Insights:")
