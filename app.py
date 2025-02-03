@@ -31,9 +31,12 @@ if 'feedback_list' not in st.session_state:
 if 'bank' not in st.session_state:
     st.session_state.bank = Bank(balance=0)
 
-# Initialize user_name in session state if not already set
+# Initialize user_name and prediction_type in session state if not already set
 if 'user_name' not in st.session_state:
     st.session_state.user_name = "Guest"  # Or any default name
+
+if 'prediction_type' not in st.session_state:
+    st.session_state.prediction_type = "Single"  # Default to single prediction
 
 # Prediction Function for Single Customer
 def predict_single_customer(input_df):
@@ -74,6 +77,42 @@ def display_feedback(prediction):
     feedback = "Thank you for using our service!" if prediction == 0 else "This customer may need intervention."
     st.write(feedback)
 
+# Prediction Function for Group Prediction
+def process_uploaded_file(uploaded_file):
+    df = pd.read_csv(uploaded_file)
+    required_columns = [
+        'Customer_Age', 'Credit_Limit', 'Total_Transactions_Count',
+        'Total_Transaction_Amount', 'Inactive_Months_12_Months',
+        'Transaction_Count_Change_Q4_Q1', 'Total_Products_Used',
+        'Average_Credit_Utilization', 'Customer_Contacts_12_Months',
+        'Transaction_Amount_Change_Q4_Q1', 'Months_as_Customer',
+        'College', 'Doctorate', 'Graduate', 'High School', 'Post-Graduate',
+        'Uneducated', '$120K +', '$40K - $60K', '$60K - $80K', '$80K - $120K',
+        'Less than $40K'
+    ]
+
+    missing_columns = [col for col in required_columns if col not in df.columns]
+    if missing_columns:
+        st.error(f"Missing required columns: {', '.join(missing_columns)}")
+        return None
+
+    df = df[required_columns]
+    predictions = best_rf_model.predict(df)
+
+    attrit_count = sum(predictions)
+    stay_count = len(predictions) - attrit_count
+
+    # Plot Pie Chart with Styling
+    fig, ax = plt.subplots(figsize=(6, 6))
+    ax.pie([stay_count, attrit_count], labels=["Stay", "Attrit"], autopct='%1.1f%%', colors=["lightgreen", "lightcoral"],
+           startangle=90, wedgeprops={"edgecolor": "black", "linewidth": 1.5, "linestyle": "solid"})
+    ax.set_title("Customer Attrition Distribution", fontsize=14, fontweight="bold", color="darkblue")
+    st.pyplot(fig)
+
+    for idx, prediction in enumerate(predictions):
+        st.write(f"Customer {idx + 1} Prediction: {'Attrit' if prediction == 1 else 'Stay'}")
+        display_feedback(prediction)
+
 # Main page
 def main_page():
     st.title("Customer Attrition Prediction")
@@ -111,123 +150,27 @@ def main_page():
             "Customer_Contacts_12_Months": [customer_contacts_12_months],
             "Transaction_Amount_Change_Q4_Q1": [transaction_amount_change_q4_q1],
             "Months_as_Customer": [months_as_customer],
-            education: [1],
-            income: [1]
+            "College": [1 if education == "College" else 0],
+            "Doctorate": [1 if education == "Doctorate" else 0],
+            "Graduate": [1 if education == "Graduate" else 0],
+            "High School": [1 if education == "High School" else 0],
+            "Post-Graduate": [1 if education == "Post-Graduate" else 0],
+            "Uneducated": [1 if education == "Uneducated" else 0],
+            "$120K +": [1 if income == "$120K +" else 0],
+            "$40K - $60K": [1 if income == "$40K - $60K" else 0],
+            "$60K - $80K": [1 if income == "$60K - $80K" else 0],
+            "$80K - $120K": [1 if income == "$80K - $120K" else 0],
+            "Less than $40K": [1 if income == "Less than $40K" else 0]
         }
-        
+
         input_df = pd.DataFrame(input_data)
-        if st.button("Predict Single Customer"):
-            predict_single_customer(input_df)
+        predict_single_customer(input_df)
 
-# Home Page
-def home_page():
-    st.title("Welcome to Our Bank Service")
-    st.header("Please log in")
-
-    # Login Selection
-    col1, col2 = st.columns(2)
-
-    with col1:
-        customer_username = st.text_input("Enter Customer Username", key="customer_username")
-        customer_password = st.text_input("Enter Customer Password", type="password", key="customer_password")
-        if st.button("Log In as Customer"):
-            # Validate username and password for Customer
-            if customer_username == "customer" and customer_password == "customer123":
-                st.session_state.user_type = "Customer"
-                st.session_state.transition = None  # Reset transition state
-                st.session_state.user_name = customer_username  # Set user_name on login
-            else:
-                st.error("Incorrect username or password. Please try again.")
-
-    with col2:
-        employee_username = st.text_input("Enter Employee Username", key="employee_username")
-        employee_password = st.text_input("Enter Employee Password", type="password", key="employee_password")
-        if st.button("Log In as Employee"):
-            # Validate username and password for Employee
-            if employee_username == "admin" and employee_password == "admin123":
-                st.session_state.user_type = "Employee"
-                st.session_state.transition = None  # Reset transition state
-                st.session_state.user_name = employee_username  # Set user_name on login
-            else:
-                st.error("Incorrect username or password. Please try again.")
-
-# Customer Page
-def customer_page():
-    st.title("Customer Page")
-    st.header("Welcome to Your Bank Account!")
-
-    # Select Action in two columns
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        if st.button("Transactions"):
-            st.session_state.transition = "Transactions"  # Set transition to transactions
-            
-    with col2:
-        if st.button("Submit Feedback"):
-            st.session_state.transition = "Feedback"  # Set transition to feedback
-
-    # Show Transaction or Feedback based on the user's choice
-    if st.session_state.transition == "Transactions":
-        transaction_section()
-    elif st.session_state.transition == "Feedback":
-        feedback_section()
-
-# Transaction Section
-def transaction_section():
-    st.title("Transactions")
-
-    action = st.selectbox("Select Action", ["Deposit", "Withdraw", "Check Balance"])
-    
-    if action == "Deposit":
-        amount = st.number_input("Enter amount to deposit", min_value=1)
-        if st.button("Deposit"):
-            balance = st.session_state.bank.deposit(amount)
-            st.success(f"Deposit successful. New Balance: {balance}")
-
-    elif action == "Withdraw":
-        amount = st.number_input("Enter amount to withdraw", min_value=1)
-        if st.button("Withdraw"):
-            result = st.session_state.bank.withdraw(amount)
-            if isinstance(result, str):
-                st.error(result)
-            else:
-                st.success(f"Withdrawal successful. New Balance: {result}")
-
-    elif action == "Check Balance":
-        balance = st.session_state.bank.check_balance()
-        st.info(f"Your current balance is: {balance}")
-
-# Feedback Section
-def feedback_section():
-    st.title("Submit Feedback")
-    
-    # Feedback form asking for name, service rating, and comments
-    name = st.text_input("Enter Your Name")
-    service_rating = st.selectbox("Rate our service", ["Excellent", "Good", "Fair", "Poor"])
-    comments = st.text_area("Your Comments")
-    
-    if st.button("Submit Feedback"):
-        if name and service_rating and comments:
-            feedback = {
-                "Name": name,
-                "Service Rating": service_rating,
-                "Comments": comments
-            }
-            st.session_state.feedback_list.append(feedback)
-            st.success("Thank you for your feedback!")
-
-# Main function to display the appropriate page
-def app():
-    if 'user_type' not in st.session_state:
-        st.session_state.user_type = None
-
-    if st.session_state.user_type == "Customer":
-        customer_page()
-    elif st.session_state.user_type == "Employee":
-        main_page()
-    else:
-        home_page()
+    elif st.session_state.prediction_type == "Group":
+        # File upload for group prediction
+        uploaded_file = st.sidebar.file_uploader("Upload a CSV file", type="csv")
+        if uploaded_file is not None:
+            process_uploaded_file(uploaded_file)
 
 if __name__ == "__main__":
-    app()
+    main_page()
