@@ -33,8 +33,8 @@ if 'user_type' not in st.session_state:
 
 # Sample login credentials
 USER_CREDENTIALS = {
-    'customer': 'password123',
-    'employee': 'employee123'
+    'customer1': 'password123',
+    'employee1': 'employeepassword123'
 }
 
 # Home Page
@@ -42,17 +42,27 @@ def home_page():
     st.title("Welcome to Our Bank Service")
     st.header("Please log in")
 
-    # Login form
+    # Login form for Customer and Employee
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
-    
-    # Login Selection
-    if st.button("Login"):
+
+    # Customer Login Button
+    if st.button("Customer Login"):
         if username in USER_CREDENTIALS and USER_CREDENTIALS[username] == password:
             st.session_state.logged_in = True
-            st.session_state.user_type = 'Customer' if username.startswith('customer') else 'Employee'
+            st.session_state.user_type = 'Customer'
             st.session_state.transition = None  # Reset transition state
-            st.success(f"Welcome, {username}!")
+            st.success(f"Welcome, Customer {username}!")
+        else:
+            st.error("Invalid username or password")
+
+    # Employee Login Button
+    if st.button("Employee Login"):
+        if username in USER_CREDENTIALS and USER_CREDENTIALS[username] == password:
+            st.session_state.logged_in = True
+            st.session_state.user_type = 'Employee'
+            st.session_state.transition = None  # Reset transition state
+            st.success(f"Welcome, Employee {username}!")
         else:
             st.error("Invalid username or password")
 
