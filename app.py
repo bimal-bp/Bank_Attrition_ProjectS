@@ -1,8 +1,8 @@
 import streamlit as st
 
 # Sample credentials (replace with your actual data storage or authentication mechanism)
-employee_credentials = {"employee1": "admin123"}
-customer_credentials = {"customer1": "password123"}
+employee_credentials = {"employee": "admin123"}
+customer_credentials = {"customer": "user123"}
 
 # Bank class to handle transactions
 class Bank:
@@ -50,25 +50,26 @@ def login(user_type):
     username = st.text_input(f"Enter {user_type} username")
     password = st.text_input(f"Enter {user_type} password", type='password')
 
-    login_button = st.button("Login")
-
-    if login_button:
-        if user_type == "Customer":
-            if username in customer_credentials and customer_credentials[username] == password:
-                st.session_state.user_type = "Customer"
-                st.session_state.username = username
-                st.success("Login successful as Customer!")
-                customer_page()
-            else:
-                st.error("Invalid credentials. Please try again.")
-        elif user_type == "Employee":
-            if username in employee_credentials and employee_credentials[username] == password:
-                st.session_state.user_type = "Employee"
-                st.session_state.username = username
-                st.success("Login successful as Employee!")
-                employee_page()
-            else:
-                st.error("Invalid credentials. Please try again.")
+    if st.button("Login"):
+        if username and password:  # Check if both username and password are entered
+            if user_type == "Customer":
+                if username in customer_credentials and customer_credentials[username] == password:
+                    st.session_state.user_type = "Customer"
+                    st.session_state.username = username
+                    st.success("Login successful as Customer!")
+                    customer_page()
+                else:
+                    st.error("Invalid credentials. Please try again.")
+            elif user_type == "Employee":
+                if username in employee_credentials and employee_credentials[username] == password:
+                    st.session_state.user_type = "Employee"
+                    st.session_state.username = username
+                    st.success("Login successful as Employee!")
+                    employee_page()
+                else:
+                    st.error("Invalid credentials. Please try again.")
+        else:
+            st.error("Please enter both username and password.")
 
 # Customer Page
 def customer_page():
