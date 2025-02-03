@@ -115,13 +115,30 @@ def feedback_section():
         else:
             st.error("Please provide your name and feedback.")
 
+# Employee Page
+def employee_page():
+    st.title("Employee Page")
+    st.header("Welcome to the Employee Dashboard!")
 
+    # You can add additional functionality here
+    st.write("Here, employees can manage bank operations such as reviewing customer feedback, viewing transaction history, etc.")
 
-    
-    # Call the home page function after feedback submission
-    if st.session_state.transition is None:
-        home_page()
+    # Example: A feedback management section
+    if st.button("View Customer Feedback"):
+        if len(st.session_state.feedback_list) > 0:
+            st.write("Customer Feedback:")
+            for feedback in st.session_state.feedback_list:
+                name, feedback_text, rating = feedback
+                st.write(f"Name: {name}, Rating: {rating}/5")
+                st.write(f"Feedback: {feedback_text}")
+        else:
+            st.warning("No feedback available yet.")
 
+    # Example: Option to log out (reset user type)
+    if st.button("Log Out"):
+        st.session_state.user_type = None  # Reset user type to None to go back to the home page
+        st.session_state.transition = None  # Reset transition state
+        home_page()  # Redirect to home page
 
 # Main code to switch between pages based on user login
 if 'user_type' not in st.session_state:
@@ -130,4 +147,5 @@ else:
     if st.session_state.user_type == "Customer":
         customer_page()
     elif st.session_state.user_type == "Employee":
-        employee_page()  # Employee code is yet to be added
+        employee_page()  # Employee page functionality
+
