@@ -16,6 +16,22 @@ def display_feedback(prediction):
 
 # Prediction for a single customer
 def predict_customer(input_df):
+    # Print the columns to debug
+    st.write(f"Columns in input_df: {input_df.columns}")
+
+    # Ensure all expected columns are present
+    expected_columns = [
+        'Inactive_Months_12_Mths', 'Transaction_Amount_Change_Q4_Q1', 
+        'Total_Products_Used', 'Total_Transactions_Count', 'Average_Credit_Utilization',
+        'Customer_Contacts_12_Months', 'Transaction_Amount_Change_Q4_Q1'
+    ]
+    
+    # Check if all expected columns are in the input DataFrame
+    missing_columns = [col for col in expected_columns if col not in input_df.columns]
+    if missing_columns:
+        st.error(f"Missing expected columns: {', '.join(missing_columns)}")
+        return
+
     # Extract relevant values from input_df
     inactive_months_12_months = input_df['Inactive_Months_12_Mths'][0]
     transaction_amount_change_q4_q1 = input_df['Transaction_Amount_Change_Q4_Q1'][0]
@@ -46,6 +62,10 @@ def predict_customer(input_df):
 # File Upload and Processing for Group Prediction with Pie Chart
 def process_uploaded_file(uploaded_file):
     df = pd.read_csv(uploaded_file)
+    
+    # Clean column names to remove any leading/trailing spaces
+    df.columns = df.columns.str.strip()
+
     required_columns = [
         'Customer_Age', 'Credit_Limit', 'Total_Transactions_Count',
         'Total_Transaction_Amount', 'Inactive_Months_12_Mths',
@@ -144,29 +164,22 @@ def main_page():
             "Customer_Contacts_12_Mths": [customer_contacts_12_months],
             "Transaction_Amount_Change_Q4_Q1": [transaction_amount_change_q4_q1],
             "Months_as_Customer": [months_as_customer],
-            "College": [1 if education == "College" else 0],
-            "Doctorate": [1 if education == "Doctorate" else 0],
-            "Graduate": [1 if education == "Graduate" else 0],
-            "High School": [1 if education == "High School" else 0],
-            "Post-Graduate": [1 if education == "Post-Graduate" else 0],
-            "Uneducated": [1 if education == "Uneducated" else 0],
-            "$120K +": [1 if income == "$120K +" else 0],
-            "$40K - $60K": [1 if income == "$40K - $60K" else 0],
-            "$60K - $80K": [1 if income == "$60K - $80K" else 0],
-            "$80K - $120K": [1 if income == "$80K - $120K" else 0],
-            "Less than $40K": [1 if income == "Less than $40K" else 0]
+            education: [1],  # This assumes the selected education level corresponds to the one-hot encoding
+            income: [1]  # Same assumption for income
         }
 
         input_df = pd.DataFrame(input_data)
-        predict_customer(input_df)
 
-    else:  # For Group Prediction
-        uploaded_file = st.sidebar.file_uploader("Upload CSV file for Group Prediction", type=["csv"])
+        if st.button("Predict"):
+            predict_customer(input_df)
+    else:
+        # File upload for group prediction
+        uploaded_file = st.file_uploader("Upload CSV for Group Prediction", type=["csv"])
         if uploaded_file is not None:
             process_uploaded_file(uploaded_file)
 
-# Main logic to check session state and render login or main page
-if 'logged_in' in st.session_state and st.session_state.logged_in:
-    main_page()
-else:
+# Run login page if not logged in
+if 'logged_in' not in st.session_state or not st.session_state.logged_in:
     login_page()
+else:
+    main_page()
