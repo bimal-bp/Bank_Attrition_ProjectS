@@ -18,8 +18,8 @@ class Bank:
     def check_balance(self):
         return self.balance
 
-# Caching the feedback list
-@st.cache(allow_output_mutation=True)
+# Using st.cache_data to store feedback
+@st.cache_data
 def get_feedback():
     return []
 
@@ -37,12 +37,14 @@ def home_page():
     with col1:
         if st.button("Customer Login"):
             st.session_state.user_type = "Customer"
-            st.experimental_rerun()  # Redirect to Customer page
-
+            st.session_state.page = "Customer"  # Navigate to Customer page
+            st.session_state.transition = "None"  # Reset transition
+            
     with col2:
         if st.button("Employee Login"):
             st.session_state.user_type = "Employee"
-            st.experimental_rerun()  # Redirect to Employee page
+            st.session_state.page = "Employee"  # Navigate to Employee page
+            st.session_state.transition = "None"  # Reset transition
 
 # Customer Page
 def customer_page():
@@ -54,20 +56,17 @@ def customer_page():
     
     with col1:
         if st.button("Transactions"):
-            st.session_state.page = "Transactions"
-            st.experimental_rerun()  # Redirect to Transactions section
-
+            st.session_state.transition = "Transactions"  # Set transition to transactions
+            
     with col2:
         if st.button("Submit Feedback"):
-            st.session_state.page = "Feedback"
-            st.experimental_rerun()  # Redirect to Feedback section
+            st.session_state.transition = "Feedback"  # Set transition to feedback
 
     # Show Transaction or Feedback based on the user's choice
-    if 'page' in st.session_state:
-        if st.session_state.page == "Transactions":
-            transaction_section()
-        elif st.session_state.page == "Feedback":
-            feedback_section()
+    if st.session_state.transition == "Transactions":
+        transaction_section()
+    elif st.session_state.transition == "Feedback":
+        feedback_section()
 
 # Transaction Section
 def transaction_section():
