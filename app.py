@@ -100,14 +100,20 @@ def feedback_section():
     # Asking for star rating out of 5
     rating = st.radio("Rate your experience (1 to 5)", [1, 2, 3, 4, 5])
     
-    # Use a unique key for the button to prevent duplicate element errors
     if st.button("Submit Feedback", key="submit_feedback"):
         if name and feedback:
             # Storing feedback with rating properly
             st.session_state.feedback_list.append((name, feedback, rating))
             st.success(f"Feedback submitted successfully! Rating: {rating}/5")
+            
+            # Resetting transition to go back to the home page
+            st.session_state.transition = None  # This will navigate back to home
         else:
             st.error("Please provide your name and feedback.")
+    
+    # Call the home page function after feedback submission
+    if st.session_state.transition is None:
+        home_page()
 
 
 # Main code to switch between pages based on user login
