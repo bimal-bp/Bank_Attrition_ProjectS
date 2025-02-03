@@ -1,6 +1,33 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import streamlit as st
+from sklearn.ensemble import RandomForestClassifier
+
+# Assuming the RandomForest model is loaded or defined elsewhere
+# Here, we initialize a dummy model for example purposes
+best_rf_model = RandomForestClassifier()
+
+def home_page():
+    st.title("Welcome to the Bank Dashboard")
+    st.write("Select a user type to continue.")
+
+    user_type = st.radio("Select User Type:", ["Admin", "Employee"])
+
+    if user_type == "Admin":
+        st.session_state.user_type = "Admin"
+        admin_page()
+    else:
+        st.session_state.user_type = "Employee"
+        employee_page()
+
+def admin_page():
+    st.title("Admin Page")
+    st.header("Welcome to the Admin Dashboard!")
+
+    # Example: Option to log out (reset user type)
+    if st.button("Log Out"):
+        st.session_state.user_type = None  # Reset user type to None to go back to the home page
+        home_page()  # Redirect to home page
 
 def employee_page():
     st.title("Employee Page")
@@ -21,7 +48,6 @@ def employee_page():
         st.session_state.user_type = None  # Reset user type to None to go back to the home page
         st.session_state.transition = None  # Reset transition state
         home_page()  # Redirect to home page
-
 
 def customer_retention_options():
     st.write("Choose an option for customer retention analysis:")
@@ -112,3 +138,9 @@ def process_uploaded_file(uploaded_file):
     # Show predictions for each customer
     for idx, prediction in enumerate(predictions):
         st.write(f"Customer {idx + 1} Prediction: {'Stay' if prediction == 0 else 'Leave'}")
+
+if __name__ == "__main__":
+    # This initiates the session state
+    if "user_type" not in st.session_state:
+        st.session_state.user_type = None  # Default to None to start
+    home_page()
