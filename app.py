@@ -1,46 +1,10 @@
-import pandas as pd
-import joblib
 import streamlit as st
+import pandas as pd
 import matplotlib.pyplot as plt
 
-# Load the trained model
-best_rf_model = joblib.load('best_rf_model.pkl')
-
-# Bank class to handle transactions
-class Bank:
-    def __init__(self, balance=0):
-        self.balance = balance
-
-    def deposit(self, amount):
-        self.balance += amount
-        return self.balance
-
-    def withdraw(self, amount):
-        if amount > self.balance:
-            return "Insufficient balance"
-        self.balance -= amount
-        return self.balance
-
-    def check_balance(self):
-        return self.balance
-
-# Initialize session state for feedback list and bank balance
-if 'feedback_list' not in st.session_state:
-    st.session_state.feedback_list = []
-
-if 'bank' not in st.session_state:
-    st.session_state.bank = Bank(balance=0)
-
-# Initialize user_name and prediction_type in session state if not already set
-if 'user_name' not in st.session_state:
-    st.session_state.user_name = "Guest"  # Or any default name
-
-if 'prediction_type' not in st.session_state:
-    st.session_state.prediction_type = "Single"  # Default to single prediction
-
-# Prediction Function for Single Customer
-def predict_single_customer(input_df):
-    # Extract values from input_df
+# Prediction for Single Customer
+def predict_customer(input_df):
+    # Extract relevant values from input_df
     inactive_months_12_months = input_df['Inactive_Months_12_Months'][0]
     transaction_amount_change_q4_q1 = input_df['Transaction_Amount_Change_Q4_Q1'][0]
     total_products_used = input_df['Total_Products_Used'][0]
@@ -54,30 +18,20 @@ def predict_single_customer(input_df):
     if prediction[0] == 1:
         st.markdown(f"### Prediction: Customer is likely to attrit ✅")
         st.subheader("Attrition Risk Insights:")
-        st.write(f"- Inactive Months (12 months): {inactive_months_12_months} months")
-        st.write(f"- Transaction Amount Change (Q4-Q1): {transaction_amount_change_q4_q1}")
-        st.write(f"- Total Products Used: {total_products_used}")
-        st.write(f"- Total Transactions Count: {total_transactions_count}")
-        st.write(f"- Average Credit Utilization: {average_credit_utilization}")
-        st.write(f"- Customer Contacts in 12 Months: {customer_contacts_12_months}")
-        display_feedback(prediction[0])  # Pass prediction to feedback function
     else:
         st.markdown(f"### Prediction: Customer is unlikely to attrit ❌")
         st.subheader("Non-Attrition Insights:")
-        st.write(f"- Inactive Months (12 months): {inactive_months_12_months} months")
-        st.write(f"- Transaction Amount Change (Q4-Q1): {transaction_amount_change_q4_q1}")
-        st.write(f"- Total Products Used: {total_products_used}")
-        st.write(f"- Total Transactions Count: {total_transactions_count}")
-        st.write(f"- Average Credit Utilization: {average_credit_utilization}")
-        st.write(f"- Customer Contacts in 12 Months: {customer_contacts_12_months}")
-        display_feedback(prediction[0])  # Pass prediction to feedback function
 
-# Display feedback based on prediction
-def display_feedback(prediction):
-    feedback = "Thank you for using our service!" if prediction == 0 else "This customer may need intervention."
-    st.write(feedback)
+    st.write(f"- Inactive Months (12 months): {inactive_months_12_months} months")
+    st.write(f"- Transaction Amount Change (Q4-Q1): {transaction_amount_change_q4_q1}")
+    st.write(f"- Total Products Used: {total_products_used}")
+    st.write(f"- Total Transactions Count: {total_transactions_count}")
+    st.write(f"- Average Credit Utilization: {average_credit_utilization}")
+    st.write(f"- Customer Contacts in 12 Months: {customer_contacts_12_months}")
+    
+    display_feedback(prediction[0])  # Pass prediction to display feedback function
 
-# Prediction Function for Group Prediction
+# File Upload and Processing for Group Prediction with Pie Chart
 def process_uploaded_file(uploaded_file):
     df = pd.read_csv(uploaded_file)
     required_columns = [
@@ -113,12 +67,16 @@ def process_uploaded_file(uploaded_file):
         st.write(f"Customer {idx + 1} Prediction: {'Attrit' if prediction == 1 else 'Stay'}")
         display_feedback(prediction)
 
-# Main page
+# Main App Page
 def main_page():
     st.title("Customer Attrition Prediction")
-    st.sidebar.header(f"Welcome, {st.session_state.user_name}")
+    
+    if 'user_name' not in st.session_state:
+        st.session_state.user_name = 'User'  # Default name if not set
 
+    st.sidebar.header(f"Welcome, {st.session_state.user_name}")
     st.sidebar.header('Prediction Type: ' + st.session_state.prediction_type)
+    
     if st.session_state.prediction_type == "Single":
         # Individual customer input fields
         customer_age = st.sidebar.number_input("Customer Age", min_value=18, max_value=100, value=30)
@@ -164,13 +122,27 @@ def main_page():
         }
 
         input_df = pd.DataFrame(input_data)
-        predict_single_customer(input_df)
+        predict_customer(input_df)
 
     elif st.session_state.prediction_type == "Group":
-        # File upload for group prediction
-        uploaded_file = st.sidebar.file_uploader("Upload a CSV file", type="csv")
+        uploaded_file = st.sidebar.file_uploader("Upload CSV file for Group Prediction", type=["csv"])
         if uploaded_file is not None:
             process_uploaded_file(uploaded_file)
 
-if __name__ == "__main__":
+# Session Handling & Login Page
+def login_page():
+    st.title("Login")
+    user_name = st.text_input("Enter your name")
+    if user_name:
+        st.session_state.user_name = user_name
+        st.session_state.logged_in = True
+        st.experimental_rerun()
+
+# Main
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
+
+if st.session_state.logged_in:
     main_page()
+else:
+    login_page()
