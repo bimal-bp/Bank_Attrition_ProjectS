@@ -90,24 +90,25 @@ def transaction_section():
         balance = st.session_state.bank.check_balance()
         st.info(f"Your current balance is: {balance}")
 
-# Feedback Section
 def feedback_section():
     st.title("Submit Feedback")
     
-    # Feedback form asking for name, feedback and star rating
+    # Feedback form asking for name, feedback, and star rating
     name = st.text_input("Enter your name")
     feedback = st.text_area("Write your feedback here")
     
     # Asking for star rating out of 5
     rating = st.radio("Rate your experience (1 to 5)", [1, 2, 3, 4, 5])
     
-    if st.button("Submit Feedback"):
+    # Use a unique key for the button to prevent duplicate element errors
+    if st.button("Submit Feedback", key="submit_feedback"):
         if name and feedback:
-            # Now storing feedback with rating properly without displaying "1" next to the button
+            # Storing feedback with rating properly
             st.session_state.feedback_list.append((name, feedback, rating))
             st.success(f"Feedback submitted successfully! Rating: {rating}/5")
         else:
             st.error("Please provide your name and feedback.")
+
 
 # Main code to switch between pages based on user login
 if 'user_type' not in st.session_state:
