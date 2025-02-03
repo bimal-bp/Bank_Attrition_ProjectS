@@ -41,6 +41,7 @@ with col2:
     if st.button("Employee Login"):
         st.session_state.user_type = "Employee"
 
+# Customer Actions after Login
 if 'user_type' in st.session_state:
     if st.session_state.user_type == "Customer":
         st.header("Customer Login")
@@ -49,28 +50,33 @@ if 'user_type' in st.session_state:
         
         if st.button("Login"):
             st.success("Login successful")
-            bank = Bank()
-            action = st.selectbox("Select Action", ["Deposit", "Withdraw", "Check Balance", "Give Feedback"])
-            
-            if action == "Deposit":
-                amount = st.number_input("Enter amount to deposit", min_value=1)
-                if st.button("Deposit"):
-                    balance = bank.deposit(amount)
-                    st.success(f"Deposit successful. New Balance: {balance}")
-            
-            elif action == "Withdraw":
-                amount = st.number_input("Enter amount to withdraw", min_value=1)
-                if st.button("Withdraw"):
-                    result = bank.withdraw(amount)
-                    if isinstance(result, str):
-                        st.error(result)
-                    else:
-                        st.success(f"Withdrawal successful. New Balance: {result}")
-            
-            elif action == "Check Balance":
-                st.info(f"Your current balance is: {bank.check_balance()}")
-            
-            elif action == "Give Feedback":
+            # Redirect to next page after login
+            page = st.radio("Select Option", ["Transactions", "Submit Feedback"])
+
+            if page == "Transactions":
+                # Sidebar for transaction options
+                action = st.sidebar.selectbox("Select Action", ["Deposit", "Withdraw", "Check Balance"])
+                bank = Bank()
+
+                if action == "Deposit":
+                    amount = st.number_input("Enter amount to deposit", min_value=1)
+                    if st.button("Deposit"):
+                        balance = bank.deposit(amount)
+                        st.success(f"Deposit successful. New Balance: {balance}")
+                
+                elif action == "Withdraw":
+                    amount = st.number_input("Enter amount to withdraw", min_value=1)
+                    if st.button("Withdraw"):
+                        result = bank.withdraw(amount)
+                        if isinstance(result, str):
+                            st.error(result)
+                        else:
+                            st.success(f"Withdrawal successful. New Balance: {result}")
+                
+                elif action == "Check Balance":
+                    st.info(f"Your current balance is: {bank.check_balance()}")
+
+            elif page == "Submit Feedback":
                 feedback = st.text_area("Enter your feedback")
                 if st.button("Submit Feedback"):
                     st.session_state.feedback_list.append((username, feedback))
