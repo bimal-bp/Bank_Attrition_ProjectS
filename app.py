@@ -26,19 +26,19 @@ if 'bank' not in st.session_state:
     st.session_state.bank = Bank(balance=0)
 
 # Home Page
+# Home Page
 def home_page():
     st.title("Welcome to Our Bank Service")
     st.header("Please log in")
 
-    # Login Selection
-    col1, col2 = st.columns(2)
+    # Login Selection (Customer and Employee in the same section)
+    user_type = st.radio("Login as", ["Customer", "Employee"])
 
-    with col1:
-        if st.button("Customer Login"):
-            st.session_state.user_type = "Customer"
-            st.session_state.transition = None  # Reset transition state when logging in as Customer
+    if user_type == "Customer":
+        st.session_state.user_type = "Customer"
+        st.session_state.transition = None  # Reset transition state when logging in as Customer
 
-    with col2:
+    elif user_type == "Employee":
         employee_name = st.text_input("Enter your name", key="employee_name")
         employee_password = st.text_input("Enter your password", type="password", key="employee_password")
         if st.button("Employee Login"):
