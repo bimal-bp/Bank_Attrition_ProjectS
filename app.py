@@ -46,6 +46,7 @@ def login(user_type):
                 st.session_state.username = username
                 st.success("Login successful as Admin!")
                 st.session_state.transition = None
+                return True  # Return True if login successful
             else:
                 st.error("Invalid username or password for Admin")
         elif user_type == "Customer":
@@ -54,8 +55,10 @@ def login(user_type):
                 st.session_state.username = username
                 st.success("Login successful as Customer!")
                 st.session_state.transition = None
+                return True  # Return True if login successful
             else:
                 st.error("Invalid username or password for Customer")
+    return False  # Return False if login fails
 
 # Home Page
 def home_page():
@@ -67,11 +70,13 @@ def home_page():
 
     with col1:
         if st.button("Admin Login"):
-            login("Admin")  # Call login function for Admin
+            if login("Admin"):
+                admin_page()  # Go to admin page after login
 
     with col2:
         if st.button("Customer Login"):
-            login("Customer")  # Call login function for Customer
+            if login("Customer"):
+                customer_page()  # Go to customer page after login
 
 # Customer Page
 def customer_page():
