@@ -18,35 +18,56 @@ class Bank:
     def check_balance(self):
         return self.balance
 
-# Initialize session state for feedback list and bank balance
+# Initialize session state for feedback list, bank balance, and login credentials
 if 'feedback_list' not in st.session_state:
     st.session_state.feedback_list = []
 
 if 'bank' not in st.session_state:
     st.session_state.bank = Bank(balance=0)
 
-# Home Page
+if 'user_type' not in st.session_state:
+    st.session_state.user_type = None
+
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
+
+# Dummy username and password for login (for demonstration)
+employee_credentials = {'employee': 'password123'}  # Key: username, Value: password
+customer_credentials = {'customer': 'password123'}  # Key: username, Value: password
+
 # Home Page
 def home_page():
     st.title("Welcome to Our Bank Service")
-    st.header("Please log in")
 
-    # Login Selection (Customer and Employee in the same section)
-    user_type = st.radio("Login as", ["Customer", "Employee"])
+    if not st.session_state.logged_in:
+        st.header("Please log in")
 
-    if user_type == "Customer":
-        st.session_state.user_type = "Customer"
-        st.session_state.transition = None  # Reset transition state when logging in as Customer
+        user_type = st.radio("Select User Type", ["Customer", "Employee"])
 
-    elif user_type == "Employee":
-        employee_name = st.text_input("Enter your name", key="employee_name")
-        employee_password = st.text_input("Enter your password", type="password", key="employee_password")
-        if st.button("Employee Login"):
-            if employee_name == "admin" and employee_password == "admin123":  # Example credentials
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
+
+        if st.button("Login"):
+            if user_type == "Customer" and username in customer_credentials and customer_credentials[username] == password:
+                st.session_state.user_type = "Customer"
+                st.session_state.logged_in = True
+                st.session_state.transition = None  # Reset transition state
+                customer_page()
+
+            elif user_type == "Employee" and username in employee_credentials and employee_credentials[username] == password:
                 st.session_state.user_type = "Employee"
-                st.session_state.transition = None  # Reset transition state when logging in as Employee
+                st.session_state.logged_in = True
+                st.session_state.transition = None  # Reset transition state
+                employee_page()
+
             else:
-                st.error("Invalid login credentials. Please try again.")
+                st.error("Invalid username or password, please try again.")
+
+    else:
+        if st.button("Logout"):
+            st.session_state.logged_in = False
+            st.session_state.user_type = None
+            home_page()  # Redirect to home page after logging out
 
 # Customer Page
 def customer_page():
@@ -120,28 +141,15 @@ def feedback_section():
         else:
             st.error("Please provide your name and feedback.")
 
+# Employee Page
 def employee_page():
     st.title("Employee Page")
     st.header("Welcome to the Employee Dashboard!")
 
-    # Customer Retention Prediction
-    retention_option = st.radio("Choose Customer Retention Prediction for:", ["Individual Customer", "Group"])
-    
-    if retention_option == "Individual Customer":
-        customer_id = st.text_input("Enter the customer's ID or Name")
-        if st.button("Predict Retention for Customer"):
-            # You can integrate your model prediction code here
-            st.success(f"Prediction for customer {customer_id}: Retained")
-            # Add code to show the prediction results
+    # You can add additional functionality here
+    st.write("Here, employees can manage bank operations.")
 
-    elif retention_option == "Group":
-        group_id = st.text_input("Enter the group ID")
-        if st.button("Predict Retention for Group"):
-            # You can integrate your model prediction code here
-            st.success(f"Prediction for group {group_id}: Retained")
-            # Add code to show the prediction results
-
-    # You can add additional functionality for employees here
+    # Buttons for future functionality
     if st.button("Check Customer Retention"):
         st.write("This feature will be developed later for customer retention analysis.")
 
@@ -151,7 +159,7 @@ def employee_page():
     # Example: Option to log out (reset user type)
     if st.button("Log Out"):
         st.session_state.user_type = None  # Reset user type to None to go back to the home page
-        st.session_state.transition = None  # Reset transition state
+        st.session_state.logged_in = False  # Reset login state
         home_page()  # Redirect to home page
 
 # Main code to switch between pages based on user login
@@ -161,4 +169,4 @@ else:
     if st.session_state.user_type == "Customer":
         customer_page()
     elif st.session_state.user_type == "Employee":
-        employee_page()  # Employee page with retention prediction feature
+        employee_page()  # Employee page
