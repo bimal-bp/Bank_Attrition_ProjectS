@@ -106,10 +106,11 @@ def feedback_section():
             st.session_state.feedback_list.append((name, feedback, rating))
             st.success(f"Feedback submitted successfully! Rating: {rating}/5")
             
-            # Resetting transition to go back to the home page
-            st.session_state.transition = None  # This will navigate back to home
+            # Use st.experimental_rerun to refresh and go to the home page
+            st.experimental_rerun()
         else:
             st.error("Please provide your name and feedback.")
+
     
     # Call the home page function after feedback submission
     if st.session_state.transition is None:
