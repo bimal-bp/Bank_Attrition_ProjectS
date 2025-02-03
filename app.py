@@ -1,12 +1,8 @@
 import streamlit as st
 
-# Sample credentials (replace with your actual data storage or authentication mechanism)
-employee_credentials = {"employee": "admin123"}
-customer_credentials = {"customer": "user123"}
-
 # Bank class to handle transactions
 class Bank:
-    def __init__(self, balance=0):  # Fixed the constructor method
+    def __init__(self, balance=0):
         self.balance = balance
 
     def deposit(self, amount):
@@ -22,54 +18,43 @@ class Bank:
     def check_balance(self):
         return self.balance
 
-# Initialize session state for feedback list and bank balance
+# Initialize session state for feedback list, bank balance, and login state
 if 'feedback_list' not in st.session_state:
     st.session_state.feedback_list = []
 
 if 'bank' not in st.session_state:
     st.session_state.bank = Bank(balance=0)
 
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
+
+if 'user_type' not in st.session_state:
+    st.session_state.user_type = None
+
+# Sample login credentials
+USER_CREDENTIALS = {
+    'customer': 'password123',
+    'employee': 'employee123'
+}
+
 # Home Page
 def home_page():
     st.title("Welcome to Our Bank Service")
     st.header("Please log in")
 
+    # Login form
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+    
     # Login Selection
-    col1, col2 = st.columns(2)
-
-    with col1:
-        if st.button("Customer Login"):
-            login("Customer")
-
-    with col2:
-        if st.button("Employee Login"):
-            login("Employee")
-
-# Function to handle login for both Customer and Employee
-def login(user_type):
-    username = st.text_input(f"Enter {user_type} username")
-    password = st.text_input(f"Enter {user_type} password", type='password')
-
     if st.button("Login"):
-        if username and password:  # Check if both username and password are entered
-            if user_type == "Customer":
-                if username in customer_credentials and customer_credentials[username] == password:
-                    st.session_state.user_type = "Customer"
-                    st.session_state.username = username
-                    st.success("Login successful as Customer!")
-                    customer_page()
-                else:
-                    st.error("Invalid credentials. Please try again.")
-            elif user_type == "Employee":
-                if username in employee_credentials and employee_credentials[username] == password:
-                    st.session_state.user_type = "Employee"
-                    st.session_state.username = username
-                    st.success("Login successful as Employee!")
-                    employee_page()
-                else:
-                    st.error("Invalid credentials. Please try again.")
+        if username in USER_CREDENTIALS and USER_CREDENTIALS[username] == password:
+            st.session_state.logged_in = True
+            st.session_state.user_type = 'Customer' if username.startswith('customer') else 'Employee'
+            st.session_state.transition = None  # Reset transition state
+            st.success(f"Welcome, {username}!")
         else:
-            st.error("Please enter both username and password.")
+            st.error("Invalid username or password")
 
 # Customer Page
 def customer_page():
@@ -147,10 +132,7 @@ def employee_page():
     st.title("Employee Page")
     st.header("Welcome to the Employee Dashboard!")
 
-    # You can add additional functionality here
-    st.write("Here, employees can manage bank operations.")
-
-    # Buttons for future functionality
+    # Buttons for employee-specific features
     if st.button("Check Customer Retention"):
         st.write("This feature will be developed later for customer retention analysis.")
 
@@ -159,12 +141,13 @@ def employee_page():
 
     # Example: Option to log out (reset user type)
     if st.button("Log Out"):
+        st.session_state.logged_in = False  # Log out user
         st.session_state.user_type = None  # Reset user type to None to go back to the home page
         st.session_state.transition = None  # Reset transition state
         home_page()  # Redirect to home page
 
 # Main code to switch between pages based on user login
-if 'user_type' not in st.session_state:
+if not st.session_state.logged_in:
     home_page()
 else:
     if st.session_state.user_type == "Customer":
