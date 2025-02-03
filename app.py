@@ -18,9 +18,30 @@ class Bank:
     def check_balance(self):
         return self.balance
 
-# Initialize Bank with starting balance
+# Initialize session state for feedback list and bank balance
+if 'feedback_list' not in st.session_state:
+    st.session_state.feedback_list = []
+
 if 'bank' not in st.session_state:
     st.session_state.bank = Bank(balance=0)
+
+# Home Page
+def home_page():
+    st.title("Welcome to Our Bank Service")
+    st.header("Please log in")
+
+    # Login Selection
+    col1, col2 = st.columns(2)
+
+    with col1:
+        if st.button("Customer Login"):
+            st.session_state.user_type = "Customer"
+            st.experimental_rerun()  # Refresh page after login
+
+    with col2:
+        if st.button("Employee Login"):
+            st.session_state.user_type = "Employee"
+            st.experimental_rerun()  # Refresh page after login
 
 # Customer Page
 def customer_page():
@@ -95,4 +116,4 @@ else:
     if st.session_state.user_type == "Customer":
         customer_page()
     elif st.session_state.user_type == "Employee":
-        employee_page()
+        employee_page()  # Employee code is yet to be added
