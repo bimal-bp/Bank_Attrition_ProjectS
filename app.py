@@ -36,12 +36,13 @@ def home_page():
     with col1:
         if st.button("Customer Login"):
             st.session_state.user_type = "Customer"
-            st.experimental_rerun()  # Refresh page after login
+            # Remove rerun, rely on state instead to update content
+            st.experimental_rerun()
 
     with col2:
         if st.button("Employee Login"):
             st.session_state.user_type = "Employee"
-            st.experimental_rerun()  # Refresh page after login
+            st.experimental_rerun()
 
 # Customer Page
 def customer_page():
@@ -53,11 +54,11 @@ def customer_page():
     
     with col1:
         if st.button("Transactions"):
-            st.session_state.transition = "Transactions"  # Set transition to transactions
+            st.session_state.transition = "Transactions"
             
     with col2:
         if st.button("Submit Feedback"):
-            st.session_state.transition = "Feedback"  # Set transition to feedback
+            st.session_state.transition = "Feedback"
 
     # Show Transaction or Feedback based on the user's choice
     if st.session_state.transition == "Transactions":
