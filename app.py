@@ -18,12 +18,17 @@ class Bank:
     def check_balance(self):
         return self.balance
 
+# Caching the feedback list
+@st.cache(allow_output_mutation=True)
+def get_feedback():
+    return []
+
 # Initialize session state for feedback if not present
 if 'feedback_list' not in st.session_state:
-    st.session_state.feedback_list = []
+    st.session_state.feedback_list = get_feedback()
 
 # Home Page
-st.title("Customer Retention")
+st.title("Welcome to Our Bank Service")
 
 # Login Selection
 col1, col2 = st.columns(2)
