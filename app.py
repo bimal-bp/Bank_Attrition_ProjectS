@@ -66,6 +66,12 @@ def process_uploaded_file(uploaded_file):
     # Clean column names to remove any leading/trailing spaces
     df.columns = df.columns.str.strip()
 
+    # Add the missing 'Customer_Contacts_12_Months' column if it doesn't exist
+    if 'Customer_Contacts_12_Months' not in df.columns:
+        st.warning("Adding missing 'Customer_Contacts_12_Months' column with default value of 0.")
+        df['Customer_Contacts_12_Months'] = 0  # Add it with a default value (you can modify this logic)
+
+    # List of required columns
     required_columns = [
         'Customer_Age', 'Credit_Limit', 'Total_Transactions_Count',
         'Total_Transaction_Amount', 'Inactive_Months_12_Mths',
@@ -77,12 +83,13 @@ def process_uploaded_file(uploaded_file):
         'Less than $40K'
     ]
 
+    # Check if all required columns exist in the DataFrame
     missing_columns = [col for col in required_columns if col not in df.columns]
     if missing_columns:
         st.error(f"Missing required columns: {', '.join(missing_columns)}")
         return None
 
-    df = df[required_columns]
+    df = df[required_columns]  # Filter the required columns
     predictions = best_rf_model.predict(df)
 
     attrit_count = sum(predictions)
@@ -161,7 +168,7 @@ def main_page():
             "Transaction_Count_Change_Q4_Q1": [transaction_count_change_q4_q1],
             "Total_Products_Used": [total_products_used],
             "Average_Credit_Utilization": [average_credit_utilization],
-            "Customer_Contacts_12_Mths": [customer_contacts_12_months],
+            "Customer_Contacts_12_Months": [customer_contacts_12_months],
             "Transaction_Amount_Change_Q4_Q1": [transaction_amount_change_q4_q1],
             "Months_as_Customer": [months_as_customer],
             education: [1],  # This assumes the selected education level corresponds to the one-hot encoding
