@@ -2,7 +2,7 @@ import streamlit as st
 
 # Bank class to handle transactions
 class Bank:
-    def __init__(self, balance=0):
+    def __init__(self, balance=0):  # Corrected the constructor name to __init__
         self.balance = balance
 
     def deposit(self, amount):
