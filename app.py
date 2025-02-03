@@ -205,6 +205,30 @@ def feedback_section():
             
             # Optionally reset form (if you want to...)
 
+# Employee Page
+def employee_page():
+    st.title("Employee Dashboard")
+    st.header("Welcome Employee!")
+
+    # Group prediction file upload
+    uploaded_file = st.file_uploader("Upload customer data CSV for group prediction", type=["csv"])
+    if uploaded_file:
+        process_uploaded_file(uploaded_file)
+
+    # Single prediction input
+    st.subheader("Predict Single Customer Attrition")
+    input_data = {
+        'Inactive_Months_12_Months': st.number_input("Inactive Months (12 months)", min_value=0),
+        'Transaction_Amount_Change_Q4_Q1': st.number_input("Transaction Amount Change (Q4-Q1)", min_value=0.0),
+        'Total_Products_Used': st.number_input("Total Products Used", min_value=0),
+        'Total_Transactions_Count': st.number_input("Total Transactions Count", min_value=0),
+        'Average_Credit_Utilization': st.number_input("Average Credit Utilization", min_value=0.0),
+        'Customer_Contacts_12_Months': st.number_input("Customer Contacts in 12 Months", min_value=0)
+    }
+    input_df = pd.DataFrame([input_data])
+    if st.button("Predict Single Customer"):
+        predict_single_customer(input_df)
+
 # Main page routing logic
 def main():
     # Check if user is logged in, else show login page
@@ -213,15 +237,7 @@ def main():
     elif st.session_state.user_type == 'Customer':
         customer_page()
     elif st.session_state.user_type == 'Employee':
-        st.title("Employee Dashboard")
-        st.write("Welcome Employee!")
-        # You can add further employee-specific functionality here.
-        st.write("Employee features to be added.")
-        st.write("Logging out...")
-        if st.button("Logout"):
-            del st.session_state['user_type']
-            st.session_state.transition = None
-            home_page()
+        employee_page()
 
 if __name__ == "__main__":
     main()
