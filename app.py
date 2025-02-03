@@ -204,3 +204,24 @@ def feedback_section():
             st.info("Thank you for your feedback! We will work on it.")
             
             # Optionally reset form (if you want to...)
+
+# Main page routing logic
+def main():
+    # Check if user is logged in, else show login page
+    if 'user_type' not in st.session_state:
+        home_page()
+    elif st.session_state.user_type == 'Customer':
+        customer_page()
+    elif st.session_state.user_type == 'Employee':
+        st.title("Employee Dashboard")
+        st.write("Welcome Employee!")
+        # You can add further employee-specific functionality here.
+        st.write("Employee features to be added.")
+        st.write("Logging out...")
+        if st.button("Logout"):
+            del st.session_state['user_type']
+            st.session_state.transition = None
+            home_page()
+
+if __name__ == "__main__":
+    main()
