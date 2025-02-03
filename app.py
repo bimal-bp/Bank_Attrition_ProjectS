@@ -82,8 +82,9 @@ def feedback_section():
     
     if st.button("Submit Feedback"):
         if name and feedback:
+            # Now storing feedback with rating properly without displaying "1" next to the button
             st.session_state.feedback_list.append((name, feedback, rating))
-            st.success("Feedback submitted successfully!")
+            st.success(f"Feedback submitted successfully! Rating: {rating}/5")
         else:
             st.error("Please provide your name and feedback.")
 
