@@ -31,6 +31,10 @@ if 'feedback_list' not in st.session_state:
 if 'bank' not in st.session_state:
     st.session_state.bank = Bank(balance=0)
 
+# Initialize user_name in session state if not already set
+if 'user_name' not in st.session_state:
+    st.session_state.user_name = "Guest"  # Or any default name
+
 # Prediction Function for Single Customer
 def predict_single_customer(input_df):
     # Extract values from input_df
@@ -131,6 +135,7 @@ def home_page():
             if customer_username == "customer" and customer_password == "customer123":
                 st.session_state.user_type = "Customer"
                 st.session_state.transition = None  # Reset transition state
+                st.session_state.user_name = customer_username  # Set user_name on login
             else:
                 st.error("Incorrect username or password. Please try again.")
 
@@ -142,6 +147,7 @@ def home_page():
             if employee_username == "admin" and employee_password == "admin123":
                 st.session_state.user_type = "Employee"
                 st.session_state.transition = None  # Reset transition state
+                st.session_state.user_name = employee_username  # Set user_name on login
             else:
                 st.error("Incorrect username or password. Please try again.")
 
