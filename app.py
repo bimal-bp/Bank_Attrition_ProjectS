@@ -1,8 +1,20 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.ensemble import RandomForestClassifier
+import joblib
 
-# Prediction for Single Customer
+# Load your trained model
+best_rf_model = joblib.load('best_rf_model.pkl')  # Adjust path as necessary
+
+# Function to display feedback based on prediction
+def display_feedback(prediction):
+    if prediction == 1:
+        st.write("This customer is likely to attrit.")
+    else:
+        st.write("This customer is unlikely to attrit.")
+
+# Prediction for a single customer
 def predict_customer(input_df):
     # Extract relevant values from input_df
     inactive_months_12_months = input_df['Inactive_Months_12_Months'][0]
@@ -21,7 +33,7 @@ def predict_customer(input_df):
     else:
         st.markdown(f"### Prediction: Customer is unlikely to attrit ❌")
         st.subheader("Non-Attrition Insights:")
-
+    
     st.write(f"- Inactive Months (12 months): {inactive_months_12_months} months")
     st.write(f"- Transaction Amount Change (Q4-Q1): {transaction_amount_change_q4_q1}")
     st.write(f"- Total Products Used: {total_products_used}")
@@ -67,16 +79,34 @@ def process_uploaded_file(uploaded_file):
         st.write(f"Customer {idx + 1} Prediction: {'Attrit' if prediction == 1 else 'Stay'}")
         display_feedback(prediction)
 
+# Login Page Functionality
+def login_page():
+    # Initialize session state if not already set
+    if 'logged_in' not in st.session_state:
+        st.session_state.logged_in = False  # Default to not logged in
+    
+    if not st.session_state.logged_in:
+        # Logic for showing login form
+        user_name = st.text_input("Enter Username")
+        password = st.text_input("Enter Password", type='password')
+
+        if st.button("Login"):
+            # Check if username and password are correct
+            if user_name == 'admin' and password == 'password':  # Replace with your actual logic
+                st.session_state.logged_in = True
+                st.experimental_rerun()  # This reruns the app after login
+            else:
+                st.error("Invalid credentials")
+    else:
+        # After login is successful, show main page
+        main_page()
+
 # Main App Page
 def main_page():
     st.title("Customer Attrition Prediction")
-    
-    if 'user_name' not in st.session_state:
-        st.session_state.user_name = 'User'  # Default name if not set
-
     st.sidebar.header(f"Welcome, {st.session_state.user_name}")
+
     st.sidebar.header('Prediction Type: ' + st.session_state.prediction_type)
-    
     if st.session_state.prediction_type == "Single":
         # Individual customer input fields
         customer_age = st.sidebar.number_input("Customer Age", min_value=18, max_value=100, value=30)
@@ -124,25 +154,13 @@ def main_page():
         input_df = pd.DataFrame(input_data)
         predict_customer(input_df)
 
-    elif st.session_state.prediction_type == "Group":
+    else:  # For Group Prediction
         uploaded_file = st.sidebar.file_uploader("Upload CSV file for Group Prediction", type=["csv"])
         if uploaded_file is not None:
             process_uploaded_file(uploaded_file)
 
-# Session Handling & Login Page
-def login_page():
-    st.title("Login")
-    user_name = st.text_input("Enter your name")
-    if user_name:
-        st.session_state.user_name = user_name
-        st.session_state.logged_in = True
-        st.experimental_rerun()
-
-# Main
-if 'logged_in' not in st.session_state:
-    st.session_state.logged_in = False
-
-if st.session_state.logged_in:
+# Main logic to check session state and render login or main page
+if 'logged_in' in st.session_state and st.session_state.logged_in:
     main_page()
 else:
     login_page()
