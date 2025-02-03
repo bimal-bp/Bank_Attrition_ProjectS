@@ -65,46 +65,55 @@ def predict_single_customer(input_df):
         st.write(f"- Customer Contacts in 12 Months: {customer_contacts_12_months}")
         display_feedback(prediction[0])  # Pass prediction to feedback function
 
-# Prediction Function for Group Prediction with Pie Chart
-def process_uploaded_file(uploaded_file):
-    df = pd.read_csv(uploaded_file)
-    required_columns = [
-        'Customer_Age', 'Credit_Limit', 'Total_Transactions_Count',
-        'Total_Transaction_Amount', 'Inactive_Months_12_Months',
-        'Transaction_Count_Change_Q4_Q1', 'Total_Products_Used',
-        'Average_Credit_Utilization', 'Customer_Contacts_12_Months',
-        'Transaction_Amount_Change_Q4_Q1', 'Months_as_Customer',
-        'College', 'Doctorate', 'Graduate', 'High School', 'Post-Graduate',
-        'Uneducated', '$120K +', '$40K - $60K', '$60K - $80K', '$80K - $120K',
-        'Less than $40K'
-    ]
-
-    missing_columns = [col for col in required_columns if col not in df.columns]
-    if missing_columns:
-        st.error(f"Missing required columns: {', '.join(missing_columns)}")
-        return None
-
-    df = df[required_columns]
-    predictions = best_rf_model.predict(df)
-
-    attrit_count = sum(predictions)
-    stay_count = len(predictions) - attrit_count
-
-    # Plot Pie Chart with Styling
-    fig, ax = plt.subplots(figsize=(6, 6))
-    ax.pie([stay_count, attrit_count], labels=["Stay", "Attrit"], autopct='%1.1f%%', colors=["lightgreen", "lightcoral"],
-           startangle=90, wedgeprops={"edgecolor": "black", "linewidth": 1.5, "linestyle": "solid"})
-    ax.set_title("Customer Attrition Distribution", fontsize=14, fontweight="bold", color="darkblue")
-    st.pyplot(fig)
-
-    for idx, prediction in enumerate(predictions):
-        st.write(f"Customer {idx + 1} Prediction: {'Attrit' if prediction == 1 else 'Stay'}")
-        display_feedback(prediction)
-
 # Display feedback based on prediction
 def display_feedback(prediction):
     feedback = "Thank you for using our service!" if prediction == 0 else "This customer may need intervention."
     st.write(feedback)
+
+# Main page
+def main_page():
+    st.title("Customer Attrition Prediction")
+    st.sidebar.header(f"Welcome, {st.session_state.user_name}")
+
+    st.sidebar.header('Prediction Type: ' + st.session_state.prediction_type)
+    if st.session_state.prediction_type == "Single":
+        # Individual customer input fields
+        customer_age = st.sidebar.number_input("Customer Age", min_value=18, max_value=100, value=30)
+        credit_limit = st.sidebar.number_input("Credit Limit", min_value=0, value=7000)
+        total_transactions_count = st.sidebar.number_input("Total Transactions Count", min_value=0, value=50)
+        total_transaction_amount = st.sidebar.number_input("Total Transaction Amount", min_value=0, value=5000)
+        inactive_months_12_months = st.sidebar.number_input("Inactive Months (12 Months)", min_value=0, max_value=12, value=2)
+        transaction_count_change_q4_q1 = st.sidebar.number_input("Transaction Count Change (Q4-Q1)", min_value=0.0, value=0.5)
+        total_products_used = st.sidebar.number_input("Total Products Used", min_value=1, value=2)
+        average_credit_utilization = st.sidebar.number_input("Average Credit Utilization", min_value=0.0, max_value=1.0, value=0.2)
+        customer_contacts_12_months = st.sidebar.number_input("Customer Contacts in 12 Months", min_value=0, value=1)
+        transaction_amount_change_q4_q1 = st.sidebar.number_input("Transaction Amount Change (Q4-Q1)", min_value=0.0, value=0.5)
+        months_as_customer = st.sidebar.number_input("Months as Customer", min_value=1, value=12)
+
+        # Education and Income Dropdowns
+        education = st.sidebar.selectbox("Select Education Level", ["College", "Doctorate", "Graduate", "High School", "Post-Graduate", "Uneducated"])
+        income = st.sidebar.selectbox("Select Income Range", ["$120K +", "$40K - $60K", "$60K - $80K", "$80K - $120K", "Less than $40K"])
+
+        # Map education and income to one-hot encoded features
+        input_data = {
+            "Customer_Age": [customer_age],
+            "Credit_Limit": [credit_limit],
+            "Total_Transactions_Count": [total_transactions_count],
+            "Total_Transaction_Amount": [total_transaction_amount],
+            "Inactive_Months_12_Months": [inactive_months_12_months],
+            "Transaction_Count_Change_Q4_Q1": [transaction_count_change_q4_q1],
+            "Total_Products_Used": [total_products_used],
+            "Average_Credit_Utilization": [average_credit_utilization],
+            "Customer_Contacts_12_Months": [customer_contacts_12_months],
+            "Transaction_Amount_Change_Q4_Q1": [transaction_amount_change_q4_q1],
+            "Months_as_Customer": [months_as_customer],
+            education: [1],
+            income: [1]
+        }
+        
+        input_df = pd.DataFrame(input_data)
+        if st.button("Predict Single Customer"):
+            predict_single_customer(input_df)
 
 # Home Page
 def home_page():
@@ -187,57 +196,32 @@ def transaction_section():
 def feedback_section():
     st.title("Submit Feedback")
     
-    # Feedback form asking for name, feedback, and star rating
-    name = st.text_input("Enter your name")
-    feedback = st.text_area("Write your feedback here")
+    # Feedback form asking for name, service rating, and comments
+    name = st.text_input("Enter Your Name")
+    service_rating = st.selectbox("Rate our service", ["Excellent", "Good", "Fair", "Poor"])
+    comments = st.text_area("Your Comments")
     
-    # Asking for star rating out of 5
-    rating = st.radio("Rate your experience (1 to 5)", [1, 2, 3, 4, 5])
-    
-    if st.button("Submit Feedback", key="submit_feedback"):
-        if name and feedback:
-            # Storing feedback with rating properly
-            st.session_state.feedback_list.append((name, feedback, rating))
-            st.success(f"Feedback submitted successfully! Rating: {rating}/5")
-            
-            # Display the thank you message
-            st.info("Thank you for your feedback! We will work on it.")
-            
-            # Optionally reset form (if you want to...)
+    if st.button("Submit Feedback"):
+        if name and service_rating and comments:
+            feedback = {
+                "Name": name,
+                "Service Rating": service_rating,
+                "Comments": comments
+            }
+            st.session_state.feedback_list.append(feedback)
+            st.success("Thank you for your feedback!")
 
-# Employee Page
-def employee_page():
-    st.title("Employee Dashboard")
-    st.header("Welcome Employee!")
-
-    # Group prediction file upload
-    uploaded_file = st.file_uploader("Upload customer data CSV for group prediction", type=["csv"])
-    if uploaded_file:
-        process_uploaded_file(uploaded_file)
-
-    # Single prediction input
-    st.subheader("Predict Single Customer Attrition")
-    input_data = {
-        'Inactive_Months_12_Months': st.number_input("Inactive Months (12 months)", min_value=0),
-        'Transaction_Amount_Change_Q4_Q1': st.number_input("Transaction Amount Change (Q4-Q1)", min_value=0.0),
-        'Total_Products_Used': st.number_input("Total Products Used", min_value=0),
-        'Total_Transactions_Count': st.number_input("Total Transactions Count", min_value=0),
-        'Average_Credit_Utilization': st.number_input("Average Credit Utilization", min_value=0.0),
-        'Customer_Contacts_12_Months': st.number_input("Customer Contacts in 12 Months", min_value=0)
-    }
-    input_df = pd.DataFrame([input_data])
-    if st.button("Predict Single Customer"):
-        predict_single_customer(input_df)
-
-# Main page routing logic
-def main():
-    # Check if user is logged in, else show login page
+# Main function to display the appropriate page
+def app():
     if 'user_type' not in st.session_state:
-        home_page()
-    elif st.session_state.user_type == 'Customer':
+        st.session_state.user_type = None
+
+    if st.session_state.user_type == "Customer":
         customer_page()
-    elif st.session_state.user_type == 'Employee':
-        employee_page()
+    elif st.session_state.user_type == "Employee":
+        main_page()
+    else:
+        home_page()
 
 if __name__ == "__main__":
-    main()
+    app()
