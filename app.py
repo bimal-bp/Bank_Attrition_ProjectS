@@ -18,39 +18,15 @@ class Bank:
     def check_balance(self):
         return self.balance
 
-# Using st.cache_data to store feedback
-@st.cache_data
-def get_feedback():
-    return []
-
-# Initialize session state for feedback if not present
-if 'feedback_list' not in st.session_state:
-    st.session_state.feedback_list = get_feedback()
-
-# Home Page (for Login)
-def home_page():
-    st.title("Welcome to Our Bank Service")
-
-    # Login Selection
-    col1, col2 = st.columns(2)
-
-    with col1:
-        if st.button("Customer Login"):
-            st.session_state.user_type = "Customer"
-            st.session_state.page = "Customer"  # Navigate to Customer page
-            st.session_state.transition = "None"  # Reset transition
-            
-    with col2:
-        if st.button("Employee Login"):
-            st.session_state.user_type = "Employee"
-            st.session_state.page = "Employee"  # Navigate to Employee page
-            st.session_state.transition = "None"  # Reset transition
+# Initialize Bank with starting balance
+if 'bank' not in st.session_state:
+    st.session_state.bank = Bank(balance=0)
 
 # Customer Page
 def customer_page():
     st.title("Customer Page")
-    st.header("Welcome, Customer!")
-    
+    st.header("Welcome to Your Bank Account!")
+
     # Select Action in two columns
     col1, col2 = st.columns(2)
     
@@ -71,27 +47,27 @@ def customer_page():
 # Transaction Section
 def transaction_section():
     st.title("Transactions")
-    bank = Bank()
-    
+
     action = st.selectbox("Select Action", ["Deposit", "Withdraw", "Check Balance"])
     
     if action == "Deposit":
         amount = st.number_input("Enter amount to deposit", min_value=1)
         if st.button("Deposit"):
-            balance = bank.deposit(amount)
+            balance = st.session_state.bank.deposit(amount)
             st.success(f"Deposit successful. New Balance: {balance}")
-    
+
     elif action == "Withdraw":
         amount = st.number_input("Enter amount to withdraw", min_value=1)
         if st.button("Withdraw"):
-            result = bank.withdraw(amount)
+            result = st.session_state.bank.withdraw(amount)
             if isinstance(result, str):
                 st.error(result)
             else:
                 st.success(f"Withdrawal successful. New Balance: {result}")
-    
+
     elif action == "Check Balance":
-        st.info(f"Your current balance is: {bank.check_balance()}")
+        balance = st.session_state.bank.check_balance()
+        st.info(f"Your current balance is: {balance}")
 
 # Feedback Section
 def feedback_section():
@@ -110,12 +86,6 @@ def feedback_section():
             st.success("Feedback submitted successfully!")
         else:
             st.error("Please provide your name and feedback.")
-
-# Employee Page (to be updated later)
-def employee_page():
-    st.title("Employee Page")
-    st.header("Welcome, Employee!")
-    # Employee functionality will be added here later
 
 # Main code to switch between pages based on user login
 if 'user_type' not in st.session_state:
