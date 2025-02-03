@@ -1,8 +1,8 @@
 import streamlit as st
 
-# Sample usernames and passwords for customers and employees (replace with actual storage in production)
-customer_credentials = {"customer1": "password1", "customer2": "password2"}
-employee_credentials = {"employee1": "password123", "employee2": "password456"}
+# Sample credentials for Admin and Customer (replace with actual storage in production)
+admin_credentials = {"admin": "adminpassword"}
+customer_credentials = {"customer1": "password123"}
 
 # Bank class to handle transactions
 class Bank:
@@ -40,7 +40,15 @@ def login(user_type):
     login_button = st.button("Login")
 
     if login_button:
-        if user_type == "Customer":
+        if user_type == "Admin":
+            if username in admin_credentials and admin_credentials[username] == password:
+                st.session_state.user_type = "Admin"
+                st.session_state.username = username
+                st.success("Login successful as Admin!")
+                st.session_state.transition = None
+            else:
+                st.error("Invalid username or password for Admin")
+        elif user_type == "Customer":
             if username in customer_credentials and customer_credentials[username] == password:
                 st.session_state.user_type = "Customer"
                 st.session_state.username = username
@@ -48,14 +56,6 @@ def login(user_type):
                 st.session_state.transition = None
             else:
                 st.error("Invalid username or password for Customer")
-        elif user_type == "Employee":
-            if username in employee_credentials and employee_credentials[username] == password:
-                st.session_state.user_type = "Employee"
-                st.session_state.username = username
-                st.success("Login successful as Employee!")
-                st.session_state.transition = None
-            else:
-                st.error("Invalid username or password for Employee")
 
 # Home Page
 def home_page():
@@ -66,12 +66,12 @@ def home_page():
     col1, col2 = st.columns(2)
 
     with col1:
-        if st.button("Customer Login"):
-            login("Customer")  # Call login function for Customer
+        if st.button("Admin Login"):
+            login("Admin")  # Call login function for Admin
 
     with col2:
-        if st.button("Employee Login"):
-            login("Employee")  # Call login function for Employee
+        if st.button("Customer Login"):
+            login("Customer")  # Call login function for Customer
 
 # Customer Page
 def customer_page():
@@ -138,12 +138,12 @@ def feedback_section():
         else:
             st.error("Please provide your name and feedback.")
 
-def employee_page():
-    st.title("Employee Page")
-    st.header(f"Welcome {st.session_state.username}!")
+def admin_page():
+    st.title("Admin Page")
+    st.header(f"Welcome Admin!")
 
-    # Additional functionality for employees
-    st.write("Employee Dashboard functionality will be added here.")
+    # Admin functionality (For now, placeholder text)
+    st.write("Admin Dashboard functionality will be added here.")
     
     # Option to log out (reset user type)
     if st.button("Log Out"):
@@ -157,5 +157,5 @@ if 'user_type' not in st.session_state:
 else:
     if st.session_state.user_type == "Customer":
         customer_page()
-    elif st.session_state.user_type == "Employee":
-        employee_page()
+    elif st.session_state.user_type == "Admin":
+        admin_page()
