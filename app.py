@@ -1,12 +1,15 @@
+import joblib
 import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
 
+# Load pre-trained model
+best_rf_model = joblib.load("path_to_your_trained_model.pkl")  # Adjust the path to your model
+
 # Prediction for individual customer
 def predict_customer(input_df):
-    # Ensure missing columns are handled
     required_columns = [
-        'Inactive_Months_12_Months', 'Transaction_Amount_Change_Q4_Q1', 'Total_Products_Used', 
+        'Inactive_Months_12_Months', 'Transaction_Amount_Change_Q4_Q1', 'Total_Products_Used',
         'Total_Transactions_Count', 'Average_Credit_Utilization', 'Customer_Contacts_12_Months'
     ]
     
@@ -22,7 +25,7 @@ def predict_customer(input_df):
     average_credit_utilization = input_df['Average_Credit_Utilization'][0]
     customer_contacts_12_months = input_df['Customer_Contacts_12_Months'][0]
 
-    # Predict using the trained model
+    # Predict using the loaded model
     prediction = best_rf_model.predict(input_df)
 
     if prediction[0] == 1:
@@ -45,7 +48,6 @@ def predict_customer(input_df):
 def process_uploaded_file(uploaded_file):
     df = pd.read_csv(uploaded_file)
 
-    # Check for required columns
     required_columns = [
         'Customer_Age', 'Credit_Limit', 'Total_Transactions_Count',
         'Total_Transaction_Amount', 'Inactive_Months_12_Months',
