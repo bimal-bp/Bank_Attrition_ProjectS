@@ -115,24 +115,19 @@ def feedback_section():
         else:
             st.error("Please provide your name and feedback.")
 
-# Employee Page
 def employee_page():
     st.title("Employee Page")
     st.header("Welcome to the Employee Dashboard!")
 
     # You can add additional functionality here
-    st.write("Here, employees can manage bank operations such as reviewing customer feedback, viewing transaction history, etc.")
+    st.write("Here, employees can manage bank operations.")
 
-    # Example: A feedback management section
-    if st.button("View Customer Feedback"):
-        if len(st.session_state.feedback_list) > 0:
-            st.write("Customer Feedback:")
-            for feedback in st.session_state.feedback_list:
-                name, feedback_text, rating = feedback
-                st.write(f"Name: {name}, Rating: {rating}/5")
-                st.write(f"Feedback: {feedback_text}")
-        else:
-            st.warning("No feedback available yet.")
+    # Buttons for future functionality
+    if st.button("Check Customer Retention"):
+        st.write("This feature will be developed later for customer retention analysis.")
+
+    if st.button("Customer Feedback Analysis"):
+        st.write("This feature will be developed later for analyzing customer feedback.")
 
     # Example: Option to log out (reset user type)
     if st.button("Log Out"):
