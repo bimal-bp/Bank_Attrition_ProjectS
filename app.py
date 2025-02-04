@@ -142,6 +142,7 @@ else:
         customer_page()
 
 
+
 # Employee Page
 def employee_page():
     st.title("Employee Page")
@@ -156,6 +157,7 @@ def predict_single_customer(data):
         st.error("Model not loaded. Cannot make predictions.")
         return
     try:
+        # Ensure input is a DataFrame
         prediction = best_rf_model.predict(data)
         result_text = "Customer is likely to attrit ✅" if prediction[0] == 1 else "Customer is unlikely to attrit ❌"
         st.markdown(f"### Prediction: {result_text}")
@@ -187,8 +189,9 @@ def process_uploaded_file(uploaded_file):
         stay_count = len(predictions) - attrit_count
 
         fig, ax = plt.subplots(figsize=(6, 6))
-        ax.pie([stay_count, attrit_count], labels=["Stay", "Attrit"], autopct='%1.1f%%', colors=["lightgreen", "lightcoral"],
-               startangle=90, wedgeprops={"edgecolor": "black", "linewidth": 1.5, "linestyle": "solid"})
+        ax.pie([stay_count, attrit_count], labels=["Stay", "Attrit"], autopct='%1.1f%%',
+               colors=["lightgreen", "lightcoral"], startangle=90,
+               wedgeprops={"edgecolor": "black", "linewidth": 1.5, "linestyle": "solid"})
         ax.set_title("Customer Attrition Distribution", fontsize=14, fontweight="bold", color="darkblue")
         st.pyplot(fig)
 
@@ -204,7 +207,7 @@ def main_page():
         return
 
     st.title("Customer Attrition Prediction")
-    st.sidebar.header(f"Welcome, {st.session_state.get('user_name', 'User')}")
+    st.sidebar.header(f"Welcome, {st.session_state.user_name}")
 
     prediction_type = st.selectbox("Select Prediction Type", ["Single", "Group"])
 
@@ -222,18 +225,15 @@ def main_page():
         transaction_amount_change = st.number_input("Transaction Amount Change Q4 to Q1", value=0.2)
         months_as_customer = st.number_input("Months as Customer", min_value=1, value=36)
 
-        # Education Level Selection
         education_level = st.selectbox("Education Level", ['Uneducated', 'High School', 'College', 'Graduate', 'Post-Graduate', 'Doctorate'])
         salary_range = st.selectbox("Salary Range", ['$120K +', '$40K - $60K', '$60K - $80K', '$80K - $120K', 'Less than $40K'])
 
-        # One-hot encoding for education and salary
         education_columns = ['College', 'Doctorate', 'Graduate', 'High School', 'Post-Graduate', 'Uneducated']
         salary_columns = ['$120K +', '$40K - $60K', '$60K - $80K', '$80K - $120K', 'Less than $40K']
-        
+
         education_data = [1 if level == education_level else 0 for level in education_columns]
         salary_data = [1 if salary == salary_range else 0 for salary in salary_columns]
 
-        # Create input data
         input_data = pd.DataFrame({
             'Customer_Age': [customer_age],
             'Credit_Limit': [credit_limit],
