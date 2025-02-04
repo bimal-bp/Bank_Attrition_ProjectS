@@ -1,7 +1,8 @@
+
+
 import streamlit as st
 import pickle
 import pandas as pd
-import random
 import matplotlib.pyplot as plt
 
 # Load the pre-trained model
@@ -13,6 +14,9 @@ except FileNotFoundError:
 except Exception as e:
     best_rf_model = None
     st.error(f"Error loading model: {e}")
+
+# Bank class to handle transactions
+import streamlit as st
 
 # Bank class to handle transactions
 class Bank:
@@ -41,11 +45,12 @@ if 'bank' not in st.session_state:
     st.session_state.bank = Bank(balance=0)
 
 # Home Page
+# Home Page
 def home_page():
     st.title("Welcome to Our Bank Service")
     st.header("Please log in")
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2 = st.columns(2)
 
     with col1:
         customer_username = st.text_input("Enter Customer Username", key="customer_username")
@@ -66,16 +71,7 @@ def home_page():
                 st.session_state.prediction_type = "Single"  # Default prediction type for employee
             else:
                 st.error("Incorrect username or password. Please try again.")
-    
-    with col3:
-        manager_username = st.text_input("Enter Manager Username", key="manager_username")
-        manager_password = st.text_input("Enter Manager Password", type="password", key="manager_password")
-        if st.button("Log In as Manager"):
-            if manager_username == "manager" and manager_password == "manager123":
-                st.session_state.user_type = "Manager"
-                st.session_state.prediction_type = "Multiple"  # Default prediction type for manager
-            else:
-                st.error("Incorrect username or password. Please try again.")
+
 
 # Customer Page
 def customer_page():
@@ -143,42 +139,11 @@ def feedback_section():
             # Display the thank you message
             st.info("Thank you for your feedback! We will work on it.")
             
+            # Optionally reset form (if you want to clear the inputs)
+            # st.session_state.transition = None  # Uncomment this line if needed
+
         else:
             st.error("Please provide your name and feedback.")
-
-# Manager Page for Feedback Analysis
-def manager_page():
-    st.title("Manager Page - Feedback Analysis")
-    st.header("Feedback Analysis")
-
-    # Load feedback data from feedback_data2.pkl
-    try:
-        with open("feedback_data2.pkl", "rb") as file:
-            feedback_data = pickle.load(file)
-
-        # Extract random 17 feedbacks (excluding sentiment part)
-        random_feedbacks = random.sample(feedback_data, 17)
-        feedback_texts = [feedback[1] for feedback in random_feedbacks]  # Extracting feedback without sentiment
-        
-        st.subheader("Random Feedback Samples")
-        for idx, feedback in enumerate(feedback_texts, 1):
-            st.write(f"{idx}. {feedback}")
-
-    except FileNotFoundError:
-        st.error("Feedback data file 'feedback_data2.pkl' not found.")
-    except Exception as e:
-        st.error(f"Error loading feedback data: {e}")
-
-# Page routing based on user type
-if 'user_type' in st.session_state:
-    if st.session_state.user_type == "Customer":
-        customer_page()
-    elif st.session_state.user_type == "Employee":
-        employee_page()
-    elif st.session_state.user_type == "Manager":
-        manager_page()
-else:
-    home_page()
 
 
 # Employee Page Function
@@ -192,6 +157,35 @@ def employee_page():
     # Add radio button in the first column
     with col1:
         prediction_type = st.radio("Select Prediction Type", ["Single", "Group"], horizontal=True)
+
+    # Add a button in the second column
+    with col2:
+        if st.button("Feedback Analysis"):
+            try:
+                # Load feedbacks from the pickle file
+                with open("feedback_data2.pkl", "rb") as file:
+                    feedback_df = pickle.load(file)
+
+                # Ensure the data is a DataFrame
+                if not isinstance(feedback_df, pd.DataFrame):
+                    st.error("Feedback data is not in a DataFrame format.")
+                    return
+
+                # Check for the 'Feedback' column
+                if "Feedback" not in feedback_df.columns:
+                    st.error("The DataFrame does not contain a 'Feedback' column.")
+                    return
+
+                # Get random feedbacks
+                st.subheader("Random Customer Feedbacks")
+                feedbacks = feedback_df["Feedback"].sample(17)  # Randomly select 17 feedbacks
+                for i, feedback in enumerate(feedbacks, 1):
+                    st.write(f"{i}. {feedback}")
+
+            except FileNotFoundError:
+                st.error("Feedback data file not found. Please ensure 'feedback_data2.pkl' exists.")
+            except Exception as e:
+                st.error(f"An error occurred while loading feedback data: {e}")
 
     if prediction_type == "Single":
         st.info("Provide Customer Details for Prediction")
