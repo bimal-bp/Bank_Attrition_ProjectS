@@ -6,7 +6,11 @@ import matplotlib.pyplot as plt
 # Load the pre-trained model
 try:
     model = pickle.load(open("best_rf_model.pkl", "rb"))
+except FileNotFoundError:
+    model = None
+    st.error("Model file not found. Please ensure 'best_rf_model.pkl' exists.")
 except Exception as e:
+    model = None
     st.error(f"Error loading model: {e}")
 
 # Bank class to handle transactions
@@ -138,9 +142,15 @@ def employee_page():
         input_df = pd.DataFrame([customer_data])
 
         if st.sidebar.button("Predict"):
-            prediction = model.predict(input_df)
-            retention = "Retained" if prediction[0] == 1 else "Churned"
-            st.write(f"Prediction: Customer will be {retention}.")
+            if model:
+                try:
+                    prediction = model.predict(input_df)
+                    retention = "Retained" if prediction[0] == 1 else "Churned"
+                    st.write(f"Prediction: Customer will be {retention}.")
+                except Exception as e:
+                    st.error(f"Error during prediction: {e}")
+            else:
+                st.error("Model is not loaded.")
 
     elif prediction_type == "Group":
         st.write("### Group Customer Retention Prediction")
@@ -163,7 +173,11 @@ def employee_page():
                 st.dataframe(df.head())
 
                 try:
-                    predictions = model.predict(df[required_columns])
+                    predictions = model.predict(df[required_columns]) if model else []
+                    if not model:
+                        st.error("Model is not loaded.")
+                        return
+
                     df['Retention_Prediction'] = ["Retained" if p == 1 else "Churned" for p in predictions]
 
                     # Plot Pie Chart with Styling
