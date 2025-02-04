@@ -241,4 +241,5 @@ def main_page():
 if st.session_state.logged_in:
     main_page()
 else:
-    login_page()
+    login_page()
+
