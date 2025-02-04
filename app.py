@@ -59,56 +59,6 @@ def login_page():
         else:
             st.error("Incorrect password.")
 
-# Customer Feedback Data
-positive_feedback = [
-    "Excellent customer service and great support!",
-    "I'm extremely satisfied with the features offered.",
-    "The app is user-friendly and intuitive.",
-    "Timely communication from the service team.",
-    "Reliable and secure platform for transactions.",
-    "Quick response to queries and issues.",
-    "Very happy with the product offerings.",
-    "Affordable plans and great discounts.",
-    "Highly recommended for smooth operations.",
-    "A pleasant experience using the service."
-]
-
-negative_feedback = [
-    "Customer service response is too slow.",
-    "The platform crashes frequently.",
-    "Hidden charges are frustrating.",
-    "Difficult to navigate the website.",
-    "Long waiting times for support.",
-    "Billing issues need to be resolved.",
-    "Product availability is limited.",
-    "Lack of proper communication channels.",
-    "Refunds take too long to process.",
-    "Not enough transparency in pricing."
-]
-
-# Display Feedback Function with Bank Suggestions
-def display_feedback(prediction):
-    if prediction == 1:  # Customer likely to attrit (Churn)
-        feedback_to_show = random.sample(negative_feedback, 3) + random.sample(positive_feedback, 1)
-        st.subheader("Customer Sentiment Insights (Churn Prediction)")
-        st.markdown("### Bank Suggestions:")
-        st.write("- We are committed to improving our response time.")
-        st.write("- New reward plans will be introduced to enhance customer experience.")
-        st.write("- Offering personalized customer support to address concerns.")
-        st.write("- Improved communication channels for faster issue resolution.")
-    else:  # Customer unlikely to attrit (Stay)
-        feedback_to_show = random.sample(positive_feedback, 3) + random.sample(negative_feedback, 1)
-        st.subheader("Customer Sentiment Insights (Stay Prediction)")
-        st.markdown("### Bank Suggestions:")
-        st.write("- We appreciate your continued loyalty to our services.")
-        st.write("- Introducing loyalty rewards and new offers to keep you satisfied.")
-        st.write("- Regular updates on new product offerings.")
-        st.write("- Transparent pricing and clear communication for a better experience.")
-
-    st.markdown("### Customer Feedback:")
-    for feedback in feedback_to_show:
-        st.write(f"- {feedback}")
-
 # Prediction
 def predict_customer(input_df):
     # Extract relevant values from input_df
@@ -131,7 +81,6 @@ def predict_customer(input_df):
         st.write(f"- Total Transactions Count: {total_transactions_count}")
         st.write(f"- Average Credit Utilization: {average_credit_utilization}")
         st.write(f"- Customer Contacts in 12 Months: {customer_contacts_12_months}")
-        display_feedback(prediction[0])  # Pass prediction to display feedback function
     else:
         st.markdown(f"### Prediction: Customer is unlikely to attrit ❌")
         st.subheader("Non-Attrition Insights:")
@@ -141,7 +90,6 @@ def predict_customer(input_df):
         st.write(f"- Total Transactions Count: {total_transactions_count}")
         st.write(f"- Average Credit Utilization: {average_credit_utilization}")
         st.write(f"- Customer Contacts in 12 Months: {customer_contacts_12_months}")
-        display_feedback(prediction[0])  # Pass prediction to display feedback function
 
 # File Upload and Processing for Group Prediction with Pie Chart
 def process_uploaded_file(uploaded_file):
@@ -177,7 +125,6 @@ def process_uploaded_file(uploaded_file):
 
     for idx, prediction in enumerate(predictions):
         st.write(f"Customer {idx + 1} Prediction: {'Attrit' if prediction == 1 else 'Stay'}")
-        display_feedback(prediction)
 
 # Main App Page
 def main_page():
@@ -230,16 +177,11 @@ def main_page():
         }
 
         input_df = pd.DataFrame(input_data)
-        predict_customer(input_df)
+        if st.button("Predict"):
+            predict_customer(input_df)
 
-    else:  # For Group Prediction
-        uploaded_file = st.sidebar.file_uploader("Upload CSV file for Group Prediction", type=["csv"])
-        if uploaded_file is not None:
+    elif st.session_state.prediction_type == "Group":
+        # File upload and processing
+        uploaded_file = st.file_uploader("Upload a CSV file", type=["csv"])
+        if uploaded_file:
             process_uploaded_file(uploaded_file)
-
-# Main
-if st.session_state.logged_in:
-    main_page()
-else:
-    login_page()
-
