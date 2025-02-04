@@ -51,6 +51,7 @@ def home_page():
         if st.button("Log In as Customer"):
             if customer_username == "customer" and customer_password == "customer123":
                 st.session_state.user_type = "Customer"
+                st.session_state.prediction_type = "Single"  # Default prediction type for customer
             else:
                 st.error("Incorrect username or password. Please try again.")
 
@@ -60,6 +61,7 @@ def home_page():
         if st.button("Log In as Employee"):
             if employee_username == "admin" and employee_password == "admin123":
                 st.session_state.user_type = "Employee"
+                st.session_state.prediction_type = "Single"  # Default prediction type for employee
             else:
                 st.error("Incorrect username or password. Please try again.")
 
@@ -121,7 +123,10 @@ def employee_page():
     st.header("Welcome to the Employee Dashboard!")
 
     st.write("### Customer Retention Prediction")
-    prediction_type = st.sidebar.selectbox("Select Prediction Type", ["Single", "Group"])
+    prediction_type = st.selectbox("Select Prediction Type", ["Single", "Group"])
+
+    # Store the selected prediction type in session state
+    st.session_state.prediction_type = prediction_type
 
 # Prediction
 def predict_customer(input_df):
@@ -138,7 +143,7 @@ def predict_customer(input_df):
     
     if prediction[0] == 1:
         st.markdown(f"### Prediction: Customer is likely to attrit ✅")
-        st.subheader("Attrition Risk Insights:")
+        st.subheader("Attrition Risk Insights: ")
         st.write(f"- Inactive Months (12 months): {inactive_months_12_months} months")
         st.write(f"- Transaction Amount Change (Q4-Q1): {transaction_amount_change_q4_q1}")
         st.write(f"- Total Products Used: {total_products_used}")
@@ -147,7 +152,7 @@ def predict_customer(input_df):
         st.write(f"- Customer Contacts in 12 Months: {customer_contacts_12_months}")
     else:
         st.markdown(f"### Prediction: Customer is unlikely to attrit ❌")
-        st.subheader("Non-Attrition Insights:")
+        st.subheader("Non-Attrition Insights: ")
         st.write(f"- Inactive Months (12 months): {inactive_months_12_months} months")
         st.write(f"- Transaction Amount Change (Q4-Q1): {transaction_amount_change_q4_q1}")
         st.write(f"- Total Products Used: {total_products_used}")
@@ -199,7 +204,8 @@ def main_page():
     st.title("Customer Attrition Prediction")
     st.sidebar.header(f"Welcome, {st.session_state.user_name}")
 
-    st.sidebar.header('Prediction Type: ' + st.session_state.prediction_type)
+    if 'prediction_type' not in st.session_state:
+        st.session_state.prediction_type = "Single"
 
     if st.session_state.prediction_type == "Single":
         # Individual customer input fields
@@ -219,47 +225,30 @@ def main_page():
         education = st.sidebar.selectbox("Select Education Level", ["College", "Doctorate", "Graduate", "High School", "Post-Graduate", "Uneducated"])
         income = st.sidebar.selectbox("Select Income Range", ["$120K +", "$40K - $60K", "$60K - $80K", "$80K - $120K", "Less than $40K"])
 
-        # Map education and income to one-hot encoded features
-        input_data = {
-            "Customer_Age": [customer_age],
-            "Credit_Limit": [credit_limit],
-            "Total_Transactions_Count": [total_transactions_count],
-            "Total_Transaction_Amount": [total_transaction_amount],
-            "Inactive_Months_12_Months": [inactive_months_12_months],
-            "Transaction_Count_Change_Q4_Q1": [transaction_count_change_q4_q1],
-            "Total_Products_Used": [total_products_used],
-            "Average_Credit_Utilization": [average_credit_utilization],
-            "Customer_Contacts_12_Months": [customer_contacts_12_months],
-            "Transaction_Amount_Change_Q4_Q1": [transaction_amount_change_q4_q1],
-            "Months_as_Customer": [months_as_customer],
-            "College": [1 if education == "College" else 0],
-            "Doctorate": [1 if education == "Doctorate" else 0],
-            "Graduate": [1 if education == "Graduate" else 0],
-            "High School": [1 if education == "High School" else 0],
-            "Post-Graduate": [1 if education == "Post-Graduate" else 0],
-            "Uneducated": [1 if education == "Uneducated" else 0],
-            "$120K +": [1 if income == "$120K +" else 0],
-            "$40K - $60K": [1 if income == "$40K - $60K" else 0],
-            "$60K - $80K": [1 if income == "$60K - $80K" else 0],
-            "$80K - $120K": [1 if income == "$80K - $120K" else 0],
-            "Less than $40K": [1 if income == "Less than $40K" else 0],
-        }
-        input_df = pd.DataFrame(input_data)
+        # Create DataFrame with input
+        input_data = pd.DataFrame({
+            'Customer_Age': [customer_age],
+            'Credit_Limit': [credit_limit],
+            'Total_Transactions_Count': [total_transactions_count],
+            'Total_Transaction_Amount': [total_transaction_amount],
+            'Inactive_Months_12_Months': [inactive_months_12_months],
+            'Transaction_Count_Change_Q4_Q1': [transaction_count_change_q4_q1],
+            'Total_Products_Used': [total_products_used],
+            'Average_Credit_Utilization': [average_credit_utilization],
+            'Customer_Contacts_12_Months': [customer_contacts_12_months],
+            'Transaction_Amount_Change_Q4_Q1': [transaction_amount_change_q4_q1],
+            'Months_as_Customer': [months_as_customer],
+            education: [1],
+            income: [1]
+        })
 
-        if st.sidebar.button("Predict"):
-            predict_customer(input_df)
+        if st.button("Predict Customer Retention"):
+            predict_customer(input_data)
 
     elif st.session_state.prediction_type == "Group":
-        # File upload for group prediction
-        uploaded_file = st.sidebar.file_uploader("Upload a CSV File for Group Prediction", type=["csv"])
+        uploaded_file = st.file_uploader("Upload Customer Data CSV", type=["csv"])
         if uploaded_file:
             process_uploaded_file(uploaded_file)
 
 if __name__ == "__main__":
-    if 'user_type' not in st.session_state:
-        home_page()
-    else:
-        if st.session_state.user_type == "Customer":
-            customer_page()
-        elif st.session_state.user_type == "Employee":
-            employee_page()
+    main_page()
