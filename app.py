@@ -151,6 +151,11 @@ import pickle
 import random
 import streamlit as st
 
+import streamlit as st
+import pickle
+import pandas as pd
+
+# Function for the Employee Page
 def employee_page():
     st.title("Employee Page")
     st.header("Welcome to the Employee Dashboard!")
@@ -191,6 +196,47 @@ def employee_page():
             except Exception as e:
                 st.error(f"An error occurred while loading feedback data: {e}")
 
+# Function for the Feedback Page
+def feedback_page():
+    st.title("Customer Feedbacks Page")
+
+    try:
+        # Load feedbacks from the pickle file
+        with open("feedback_data2.pkl", "rb") as file:
+            feedback_df = pickle.load(file)
+
+        # Ensure the data is a DataFrame
+        if not isinstance(feedback_df, pd.DataFrame):
+            st.error("Feedback data is not in a DataFrame format.")
+            return
+
+        # Check for the 'Feedback' column
+        if "Feedback" not in feedback_df.columns:
+            st.error("The DataFrame does not contain a 'Feedback' column.")
+            return
+
+        # Display all feedbacks
+        st.subheader("All Customer Feedbacks")
+        for i, feedback in enumerate(feedback_df["Feedback"], 1):
+            st.write(f"{i}. {feedback}")
+
+    except FileNotFoundError:
+        st.error("Feedback data file not found. Please ensure 'feedback_data2.pkl' exists.")
+    except Exception as e:
+        st.error(f"An error occurred while loading feedback data: {e}")
+
+# Main Function for Navigation
+def main():
+    st.sidebar.title("Navigation")
+    page = st.sidebar.radio("Choose a page", ["Employee Page", "Feedback Page"])
+
+    if page == "Employee Page":
+        employee_page()
+    elif page == "Feedback Page":
+        feedback_page()
+
+if __name__ == "__main__":
+    main()
 
 
 
