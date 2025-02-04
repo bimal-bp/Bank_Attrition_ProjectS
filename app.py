@@ -1,8 +1,7 @@
-
 import streamlit as st
 import pickle
 import pandas as pd
-import matplotlib.pyplot as plt
+import random
 
 # Load the pre-trained model
 try:
@@ -13,9 +12,6 @@ except FileNotFoundError:
 except Exception as e:
     best_rf_model = None
     st.error(f"Error loading model: {e}")
-
-# Bank class to handle transactions
-import streamlit as st
 
 # Bank class to handle transactions
 class Bank:
@@ -44,9 +40,6 @@ if 'bank' not in st.session_state:
     st.session_state.bank = Bank(balance=0)
 
 # Home Page
-# Home Page
-import streamlit as st
-
 def home_page():
     st.title("Welcome to Our Bank Service")
     st.header("Please log in")
@@ -82,7 +75,6 @@ def home_page():
                 st.session_state.prediction_type = "Multiple"  # Default prediction type for manager
             else:
                 st.error("Incorrect username or password. Please try again.")
-
 
 # Customer Page
 def customer_page():
@@ -156,7 +148,7 @@ def feedback_section():
         else:
             st.error("Please provide your name and feedback.")
 
-
+# Manager Page for Feedback Analysis
 def manager_page():
     st.title("Manager Page - Feedback Analysis")
     st.header("Feedback Analysis")
@@ -178,6 +170,18 @@ def manager_page():
         st.error("Feedback data file 'feedback_data2.pkl' not found.")
     except Exception as e:
         st.error(f"Error loading feedback data: {e}")
+
+# Page routing based on user type
+if 'user_type' in st.session_state:
+    if st.session_state.user_type == "Customer":
+        customer_page()
+    elif st.session_state.user_type == "Employee":
+        st.write("Welcome, Employee!")
+    elif st.session_state.user_type == "Manager":
+        manager_page()
+else:
+    home_page()
+
 
 # Employee Page Function
 def employee_page():
