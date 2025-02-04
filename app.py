@@ -138,39 +138,6 @@ def display_feedback():
     else:
         st.info("No feedback submitted yet.")
 
-import streamlit as st
-import pandas as pd
-import pickle
-
-# Load the pre-trained model
-best_rf_model = pickle.load(open("best_rf_model.pkl", "rb"))
-
-# Function to predict for a single customer
-def predict_customer(input_df):
-    try:
-        # Perform prediction
-        prediction = best_rf_model.predict(input_df)
-        prediction_prob = best_rf_model.predict_proba(input_df)
-        st.success(f"Prediction: {prediction[0]}")
-        st.info(f"Prediction Probability: {prediction_prob}")
-    except Exception as e:
-        st.error(f"Error during prediction: {e}")
-
-# Function to process uploaded CSV file for group prediction
-def process_uploaded_file(uploaded_file):
-    try:
-        # Read the uploaded CSV file
-        group_data = pd.read_csv(uploaded_file)
-        
-        # Ensure the input data matches the model's expected format
-        predictions = best_rf_model.predict(group_data)
-        
-        # Display predictions
-        st.success("Group Prediction Completed!")
-        st.dataframe(pd.DataFrame({"Prediction": predictions}))
-    except Exception as e:
-        st.error(f"Error processing the file: {e}")
-
 # Employee Page Function
 def employee_page():
     st.title("Employee Page")
@@ -222,26 +189,18 @@ def employee_page():
         input_df = pd.DataFrame(input_data)
 
         if st.button("Predict for Single Customer"):
-            predict_customer(input_df)
+            try:
+                prediction = best_rf_model.predict(input_df)
+                prediction_prob = best_rf_model.predict_proba(input_df)
+                st.success(f"Prediction: {prediction[0]}")
+                st.info(f"Prediction Probability: {prediction_prob}")
+            except Exception as e:
+                st.error(f"Error during prediction: {e}")
 
     elif prediction_type == "Group":
         uploaded_file = st.file_uploader("Upload a CSV File for Group Prediction", type=["csv"])
         if uploaded_file:
             if st.button("Predict for Group Customers"):
-                process_uploaded_file(uploaded_file)
-
-# Main App Logic
-def main_page():
-    if not st.session_state.get("logged_in", False):
-        st.title("Welcome to the App")
-        st.info("Please log in to continue.")
-    else:
-        st.sidebar.header(f"Welcome, {st.session_state.get('user_name', 'User')}")
-        if st.session_state.get("user_type") == "Customer":
-            customer_page()
-        else:
-            employee_page()
-
-# Run the app
-if __name__ == "__main__":
-    main_page()
+                try:
+                    group_data = pd.read_csv(uploaded_file)
+                    predictions = best_rf_model.predict(group_data)
