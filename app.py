@@ -177,7 +177,7 @@ def employee_page():
                     return
 
                 # Get random feedbacks
-                st.subheader("Random Customer Feedbacks")
+                st.subheader("Customer Feedbacks")
                 feedbacks = feedback_df["Feedback"].sample(17)  # Randomly select 17 feedbacks
                 for i, feedback in enumerate(feedbacks, 1):
                     st.write(f"{i}. {feedback}")
