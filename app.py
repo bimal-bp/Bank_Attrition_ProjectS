@@ -130,7 +130,6 @@ def employee_page():
             if best_rf_model:
                 try:
                     prediction = best_rf_model.predict(input_df)
-                    prediction_prob = best_rf_model.predict_proba(input_df)
 
                     # Display prediction result
                     if prediction[0] == 1:
@@ -151,9 +150,6 @@ def employee_page():
                         st.write(f"- Total Transactions Count: {total_transactions_count}")
                         st.write(f"- Average Credit Utilization: {average_credit_utilization}")
                         st.write(f"- Customer Contacts in 12 Months: {customer_contacts_12_months}")
-
-                    # Display prediction probabilities
-                    st.info(f"Prediction Probability: {prediction_prob}")
                 except Exception as e:
                     st.error(f"Error during prediction: {e}")
             else:
@@ -171,15 +167,8 @@ def employee_page():
                     if best_rf_model:
                         try:
                             predictions = best_rf_model.predict(group_data)
-                            prediction_probs = best_rf_model.predict_proba(group_data)
                             group_data["Prediction"] = predictions
-                            group_data["Prediction_Probabilities"] = [list(prob) for prob in prediction_probs]
                             st.success("Predictions generated successfully!")
-                            st.write("Prediction Results:")
-                            st.dataframe(group_data)
-
-                            csv = group_data.to_csv(index=False).encode('utf-8')
-                            st.download_button(label="Download Predictions as CSV", data=csv, file_name="predictions.csv")
                         except Exception as e:
                             st.error(f"Error during group prediction: {e}")
                     else:
