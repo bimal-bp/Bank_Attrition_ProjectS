@@ -145,6 +145,9 @@ def feedback_section():
 
 
 # Employee Page Function
+import pickle
+import streamlit as st
+
 def employee_page():
     st.title("Employee Page")
     st.header("Welcome to the Employee Dashboard!")
@@ -161,8 +164,17 @@ def employee_page():
         if st.button("Feedback Analysis"):
             try:
                 # Load feedbacks from the pickle file
-                with open("feedback_data2.pkl", "rb") as file:
+                with open("feedback_data.pkl", "rb") as file:
                     feedback_list = pickle.load(file)
+
+                # Debugging: Check what was loaded
+                if not feedback_list:
+                    st.error("No feedback data found in the file.")
+                    return
+
+                if not isinstance(feedback_list, list):
+                    st.error("Feedback data is not in a list format.")
+                    return
 
                 # Display the first 12 feedbacks
                 st.subheader("Customer Feedbacks")
