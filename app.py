@@ -31,7 +31,7 @@ class Bank:
     def check_balance(self):
         return self.balance
 
-# Initialize session state for feedback list and bank balance
+# Initialize session state
 if 'feedback_list' not in st.session_state:
     st.session_state.feedback_list = []
 
@@ -40,6 +40,9 @@ if 'bank' not in st.session_state:
 
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
+
+if 'user_type' not in st.session_state:
+    st.session_state.user_type = ""
 
 if 'user_name' not in st.session_state:
     st.session_state.user_name = ""
@@ -135,33 +138,32 @@ def display_feedback():
     else:
         st.info("No feedback submitted yet.")
 
-# Main App Page
-def main_page():
-    if not st.session_state.logged_in:
-        home_page()
-        return
-
-    st.title("Customer Attrition Prediction")
-    st.sidebar.header(f"Welcome, {st.session_state.user_name}")
-
-    if st.session_state.user_type == "Customer":
-        customer_page()
-    else:
-        employee_page()
-
 # Employee Page
 def employee_page():
     st.title("Employee Page")
     st.header("Welcome to the Employee Dashboard!")
 
     prediction_type = st.selectbox("Select Prediction Type", ["Single", "Group"])
-    st.session_state.prediction_type = prediction_type
 
-    if st.session_state.prediction_type == "Single":
-        # Add customer input fields and prediction logic if required
+    if prediction_type == "Single":
         st.info("Single prediction not implemented yet.")
-    elif st.session_state.prediction_type == "Group":
+    elif prediction_type == "Group":
         uploaded_file = st.file_uploader("Upload a CSV File for Group Prediction", type=["csv"])
         if uploaded_file:
-            process_uploaded_file(uploaded_file)
+            df = pd.read_csv(uploaded_file)
+            st.write(df.head())
+            st.success("Data successfully loaded for prediction.")
 
+# Main App Logic
+def main_page():
+    if not st.session_state.logged_in:
+        home_page()
+    else:
+        st.sidebar.header(f"Welcome, {st.session_state.user_name}")
+        if st.session_state.user_type == "Customer":
+            customer_page()
+        else:
+            employee_page()
+
+# Run the app
+main_page()
