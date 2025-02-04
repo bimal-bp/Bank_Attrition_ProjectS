@@ -146,12 +146,6 @@ def feedback_section():
 
 
 # Employee Page Function
-
-
-import pickle
-import random
-import streamlit as st
-
 def employee_page():
     st.title("Employee Page")
     st.header("Welcome to the Employee Dashboard!")
@@ -183,17 +177,14 @@ def employee_page():
 
                 # Get random feedbacks
                 st.subheader("Random Customer Feedbacks")
-                feedbacks = feedback_df["Feedback"].sample(17)  # Randomly select 12 feedbacks
+                feedbacks = feedback_df["Feedback"].sample(17)  # Randomly select 17 feedbacks
                 for i, feedback in enumerate(feedbacks, 1):
                     st.write(f"{i}. {feedback}")
 
             except FileNotFoundError:
-                st.error("Feedback data file not found. Please ensure 'feedback_data.pkl' exists.")
+                st.error("Feedback data file not found. Please ensure 'feedback_data2.pkl' exists.")
             except Exception as e:
                 st.error(f"An error occurred while loading feedback data: {e}")
-
-
-
 
     if prediction_type == "Single":
         st.info("Provide Customer Details for Prediction")
@@ -286,30 +277,29 @@ def employee_page():
                             labels = ["Likely to Stay", "Likely to Leave"]
                             sizes = [prediction_counts.get(0, 0), prediction_counts.get(1, 0)]
 
-                            # Display a pie chart
-                        # Display a stylish pie chart with shadow, smooth edges, and borders
-                        fig, ax = plt.subplots(figsize=(6, 6))  # Adjusting figure size
-                        wedges, texts, autotexts = ax.pie(
-                            sizes,
-                            labels=labels,
-                            autopct='%1.1f%%',
-                            startangle=90,
-                            colors=["#4CAF50", "#F44336"],
-                            shadow=True,  # Adding shadow effect
-                            wedgeprops=dict(edgecolor='black', linewidth=2, linestyle='solid', alpha=0.9)  # Stylish wedge borders
-                        )
+                            # Display a stylish pie chart with shadow, smooth edges, and borders
+                            fig, ax = plt.subplots(figsize=(6, 6))  # Adjusting figure size
+                            wedges, texts, autotexts = ax.pie(
+                                sizes,
+                                labels=labels,
+                                autopct='%1.1f%%',
+                                startangle=90,
+                                colors=["#4CAF50", "#F44336"],
+                                shadow=True,  # Adding shadow effect
+                                wedgeprops=dict(edgecolor='black', linewidth=2, linestyle='solid', alpha=0.9)  # Stylish wedge borders
+                            )
 
-                        # Customizing the font size and style for texts
-                        for t in texts + autotexts:
-                            t.set_fontsize(14)
-                            t.set_fontweight('bold')
-                            t.set_color('white')
+                            # Customizing the font size and style for texts
+                            for t in texts + autotexts:
+                                t.set_fontsize(14)
+                                t.set_fontweight('bold')
+                                t.set_color('white')
 
-                        # Adding title and making the chart circular
-                        ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-                        st.pyplot(fig)
+                            # Adding title and making the chart circular
+                            ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+                            st.pyplot(fig)
 
-                        st.success("Predictions generated successfully!")
+                            st.success("Predictions generated successfully!")
 
                             # Allow the user to download predictions as CSV
                             csv = group_data.to_csv(index=False).encode('utf-8')
@@ -321,6 +311,7 @@ def employee_page():
                         st.error("Model is not loaded. Please check the model file.")
             except Exception as e:
                 st.error(f"Error reading the uploaded file: {e}")
+
 
 # Main function to run the app
 def main():
