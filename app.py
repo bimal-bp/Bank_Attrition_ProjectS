@@ -157,35 +157,6 @@ def employee_page():
     with col1:
         prediction_type = st.radio("Select Prediction Type", ["Single", "Group"], horizontal=True)
 
-    # Add a button in the second column
-    with col2:
-        if st.button("Feedback Analysis"):
-            try:
-                # Load feedbacks from the pickle file
-                with open("feedback_data2.pkl", "rb") as file:
-                    feedback_df = pickle.load(file)
-
-                # Ensure the data is a DataFrame
-                if not isinstance(feedback_df, pd.DataFrame):
-                    st.error("Feedback data is not in a DataFrame format.")
-                    return
-
-                # Check for the 'Feedback' column
-                if "Feedback" not in feedback_df.columns:
-                    st.error("The DataFrame does not contain a 'Feedback' column.")
-                    return
-
-                # Get random feedbacks
-                st.subheader("Customer Feedbacks")
-                feedbacks = feedback_df["Feedback"].sample(17)  # Randomly select 17 feedbacks
-                for i, feedback in enumerate(feedbacks, 1):
-                    st.write(f"{i}. {feedback}")
-
-            except FileNotFoundError:
-                st.error("Feedback data file not found. Please ensure 'feedback_data2.pkl' exists.")
-            except Exception as e:
-                st.error(f"An error occurred while loading feedback data: {e}")
-
     if prediction_type == "Single":
         st.info("Provide Customer Details for Prediction")
         customer_age = st.number_input("Customer Age", min_value=18, max_value=100, value=30)
