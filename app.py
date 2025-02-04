@@ -145,8 +145,7 @@ def feedback_section():
 
 
 # Employee Page Function
-import pickle
-import streamlit as st
+
 
 def employee_page():
     st.title("Employee Page")
@@ -164,27 +163,30 @@ def employee_page():
         if st.button("Feedback Analysis"):
             try:
                 # Load feedbacks from the pickle file
-                with open("feedback_data2.pkl", "rb") as file:
-                    feedback_list = pickle.load(file)
+                with open("feedback_data.pkl", "rb") as file:
+                    feedback_df = pickle.load(file)
 
-                # Debugging: Check what was loaded
-                if not feedback_list:
-                    st.error("No feedback data found in the file.")
+                # Ensure the data is a DataFrame
+                if not isinstance(feedback_df, pd.DataFrame):
+                    st.error("Feedback data is not in a DataFrame format.")
                     return
 
-                if not isinstance(feedback_list, list):
-                    st.error("Feedback data is not in a list format.")
+                # Check for the 'Feedback' column
+                if "Feedback" not in feedback_df.columns:
+                    st.error("The DataFrame does not contain a 'Feedback' column.")
                     return
 
                 # Display the first 12 feedbacks
                 st.subheader("Customer Feedbacks")
-                for i, feedback in enumerate(feedback_list[:12], 1):
+                feedbacks = feedback_df["Feedback"].head(12)
+                for i, feedback in enumerate(feedbacks, 1):
                     st.write(f"{i}. {feedback}")
 
             except FileNotFoundError:
                 st.error("Feedback data file not found. Please ensure 'feedback_data.pkl' exists.")
             except Exception as e:
                 st.error(f"An error occurred while loading feedback data: {e}")
+
 
 
 
