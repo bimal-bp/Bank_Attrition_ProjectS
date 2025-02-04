@@ -1,8 +1,9 @@
 import streamlit as st
 
 # Bank class to handle transactions
+# Bank class to handle transactions
 class Bank:
-    def _init_(self, balance=0):
+    def __init__(self, balance=0):  # Corrected the method name to __init__
         self.balance = balance
 
     def deposit(self, amount):
