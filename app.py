@@ -18,7 +18,7 @@ import streamlit as st
 
 # Bank class to handle transactions
 class Bank:
-    def _init_(self, balance=0):
+    def __init__(self, balance=0):
         self.balance = balance
 
     def deposit(self, amount):
@@ -33,6 +33,7 @@ class Bank:
 
     def check_balance(self):
         return self.balance
+
 
 # Initialize session state for feedback list and bank balance
 if 'feedback_list' not in st.session_state:
