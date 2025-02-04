@@ -159,7 +159,21 @@ def employee_page():
     # Add a button in the second column
     with col2:
         if st.button("Feedback Analysis"):
-            st.write("Feedback Analysis Clicked!")
+            try:
+                # Load feedbacks from the pickle file
+                with open("feedback_data.pkl", "rb") as file:
+                    feedback_list = pickle.load(file)
+
+                # Display the first 12 feedbacks
+                st.subheader("Customer Feedbacks")
+                for i, feedback in enumerate(feedback_list[:12], 1):
+                    st.write(f"{i}. {feedback}")
+
+            except FileNotFoundError:
+                st.error("Feedback data file not found. Please ensure 'feedback_data.pkl' exists.")
+            except Exception as e:
+                st.error(f"An error occurred while loading feedback data: {e}")
+
 
 
 
