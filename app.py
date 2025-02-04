@@ -45,11 +45,13 @@ if 'bank' not in st.session_state:
 
 # Home Page
 # Home Page
+import streamlit as st
+
 def home_page():
     st.title("Welcome to Our Bank Service")
     st.header("Please log in")
 
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
         customer_username = st.text_input("Enter Customer Username", key="customer_username")
@@ -68,6 +70,16 @@ def home_page():
             if employee_username == "admin" and employee_password == "admin123":
                 st.session_state.user_type = "Employee"
                 st.session_state.prediction_type = "Single"  # Default prediction type for employee
+            else:
+                st.error("Incorrect username or password. Please try again.")
+    
+    with col3:
+        manager_username = st.text_input("Enter Manager Username", key="manager_username")
+        manager_password = st.text_input("Enter Manager Password", type="password", key="manager_password")
+        if st.button("Log In as Manager"):
+            if manager_username == "manager" and manager_password == "manager123":
+                st.session_state.user_type = "Manager"
+                st.session_state.prediction_type = "Multiple"  # Default prediction type for manager
             else:
                 st.error("Incorrect username or password. Please try again.")
 
