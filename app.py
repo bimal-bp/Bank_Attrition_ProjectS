@@ -152,13 +152,17 @@ def employee_page():
     st.session_state.prediction_type = prediction_type
 
 # Single customer prediction
+# Single customer prediction with reshaping
 def predict_single_customer(data):
     if best_rf_model is None:
         st.error("Model not loaded. Cannot make predictions.")
         return
     try:
-        # Convert input to DataFrame format for compatibility with the model
-        prediction = best_rf_model.predict(data.values)
+        # Ensure data is in the correct shape for prediction
+        reshaped_data = data.values.reshape(1, -1) if len(data.shape) == 1 else data.values
+
+        # Predict using the reshaped data
+        prediction = best_rf_model.predict(reshaped_data)
         result_text = "Customer is likely to attrit ✅" if prediction[0] == 1 else "Customer is unlikely to attrit ❌"
         st.markdown(f"### Prediction: {result_text}")
     except Exception as e:
