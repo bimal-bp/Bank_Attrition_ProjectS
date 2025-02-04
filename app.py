@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 # Load the pre-trained model
 try:
-    best_rf_model = pickle.load(open("best_rf_model.pkl", "rb"))
+    best_rf_model = pickle.load(open("xgb_model.pkl", "rb"))
 except FileNotFoundError:
     best_rf_model = None
     st.error("Model file not found. Please ensure 'best_rf_model.pkl' exists.")
