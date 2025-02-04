@@ -4,7 +4,7 @@ import streamlit as st
 import matplotlib.pyplot as plt
 
 # Load pre-trained model
-best_rf_model = joblib.load("path_to_your_trained_model.pkl")  # Adjust the path to your model
+best_rf_model = joblib.load("best_rf_model.pkl")  # Adjust the path to your model
 
 # Prediction for individual customer
 def predict_customer(input_df):
