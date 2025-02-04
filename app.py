@@ -14,8 +14,11 @@ except Exception as e:
     st.error(f"Error loading model: {e}")
 
 # Bank class to handle transactions
+import streamlit as st
+
+# Bank class to handle transactions
 class Bank:
-    def __init__(self, balance=0):
+    def _init_(self, balance=0):
         self.balance = balance
 
     def deposit(self, amount):
@@ -47,40 +50,32 @@ def home_page():
     col1, col2 = st.columns(2)
 
     with col1:
-        customer_username = st.text_input("Enter Customer Username", key="customer_username")
-        customer_password = st.text_input("Enter Customer Password", type="password", key="customer_password")
-        if st.button("Log In as Customer"):
-            if customer_username == "customer" and customer_password == "customer123":
-                st.session_state.user_type = "Customer"
-                st.session_state.transition = None
-            else:
-                st.error("Incorrect username or password. Please try again.")
+        if st.button("Customer Login"):
+            st.session_state.user_type = "Customer"
+            st.session_state.transition = None  # Reset transition state when logging in as Customer
 
     with col2:
-        employee_username = st.text_input("Enter Employee Username", key="employee_username")
-        employee_password = st.text_input("Enter Employee Password", type="password", key="employee_password")
-        if st.button("Log In as Employee"):
-            if employee_username == "admin" and employee_password == "admin123":
-                st.session_state.user_type = "Employee"
-                st.session_state.transition = None
-            else:
-                st.error("Incorrect username or password. Please try again.")
+        if st.button("Employee Login"):
+            st.session_state.user_type = "Employee"
+            st.session_state.transition = None  # Reset transition state when logging in as Employee
 
 # Customer Page
 def customer_page():
     st.title("Customer Page")
     st.header("Welcome to Your Bank Account!")
 
+    # Select Action in two columns
     col1, col2 = st.columns(2)
-
+    
     with col1:
         if st.button("Transactions"):
-            st.session_state.transition = "Transactions"
-
+            st.session_state.transition = "Transactions"  # Set transition to transactions
+            
     with col2:
         if st.button("Submit Feedback"):
-            st.session_state.transition = "Feedback"
+            st.session_state.transition = "Feedback"  # Set transition to feedback
 
+    # Show Transaction or Feedback based on the user's choice
     if st.session_state.transition == "Transactions":
         transaction_section()
     elif st.session_state.transition == "Feedback":
@@ -91,7 +86,7 @@ def transaction_section():
     st.title("Transactions")
 
     action = st.selectbox("Select Action", ["Deposit", "Withdraw", "Check Balance"])
-
+    
     if action == "Deposit":
         amount = st.number_input("Enter amount to deposit", min_value=1)
         if st.button("Deposit"):
@@ -111,7 +106,6 @@ def transaction_section():
         balance = st.session_state.bank.check_balance()
         st.info(f"Your current balance is: {balance}")
 
-# Feedback Section
 def feedback_section():
     st.title("Submit Feedback")
     
@@ -136,6 +130,7 @@ def feedback_section():
 
         else:
             st.error("Please provide your name and feedback.")
+
 
 # Employee Page Function
 def employee_page():
