@@ -15,7 +15,7 @@ if "prediction_type" not in st.session_state:
 # Load the trained model
 @st.cache_resource
 def load_model():
-    return joblib.load("bank_attrition_model.pkl")  # Replace with your model file
+    return joblib.load("best_rf_model.pkl")  # Replace with your model file
 
 model = load_model()
 
