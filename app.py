@@ -147,6 +147,10 @@ def feedback_section():
 # Employee Page Function
 
 
+import pickle
+import random
+import streamlit as st
+
 def employee_page():
     st.title("Employee Page")
     st.header("Welcome to the Employee Dashboard!")
@@ -176,9 +180,9 @@ def employee_page():
                     st.error("The DataFrame does not contain a 'Feedback' column.")
                     return
 
-                # Display the first 12 feedbacks
-                st.subheader("Customer Feedbacks")
-                feedbacks = feedback_df["Feedback"].head(12)
+                # Get random feedbacks
+                st.subheader("Random Customer Feedbacks")
+                feedbacks = feedback_df["Feedback"].sample(12)  # Randomly select 12 feedbacks
                 for i, feedback in enumerate(feedbacks, 1):
                     st.write(f"{i}. {feedback}")
 
@@ -186,7 +190,6 @@ def employee_page():
                 st.error("Feedback data file not found. Please ensure 'feedback_data.pkl' exists.")
             except Exception as e:
                 st.error(f"An error occurred while loading feedback data: {e}")
-
 
 
 
