@@ -127,7 +127,6 @@ def feedback_section():
         else:
             st.error("Please provide your name and feedback.")
 
-
 # Employee Page Function
 def employee_page():
     st.title("Employee Page")
@@ -251,3 +250,17 @@ def employee_page():
             except Exception as e:
                 st.error(f"Error reading the uploaded file: {e}")
 
+# Main function to run the app
+def main():
+    if 'user_type' not in st.session_state:
+        st.session_state.user_type = None
+
+    if st.session_state.user_type == "Customer":
+        customer_page()
+    elif st.session_state.user_type == "Employee":
+        employee_page()
+    else:
+        home_page()
+
+if __name__ == "__main__":
+    main()
