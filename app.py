@@ -157,6 +157,28 @@ def feedback_section():
             st.error("Please provide your name and feedback.")
 
 
+def manager_page():
+    st.title("Manager Page - Feedback Analysis")
+    st.header("Feedback Analysis")
+
+    # Load feedback data from feedback_data2.pkl
+    try:
+        with open("feedback_data2.pkl", "rb") as file:
+            feedback_data = pickle.load(file)
+
+        # Extract random 17 feedbacks (excluding sentiment part)
+        random_feedbacks = random.sample(feedback_data, 17)
+        feedback_texts = [feedback[1] for feedback in random_feedbacks]  # Extracting feedback without sentiment
+        
+        st.subheader("Random Feedback Samples")
+        for idx, feedback in enumerate(feedback_texts, 1):
+            st.write(f"{idx}. {feedback}")
+
+    except FileNotFoundError:
+        st.error("Feedback data file 'feedback_data2.pkl' not found.")
+    except Exception as e:
+        st.error(f"Error loading feedback data: {e}")
+
 # Employee Page Function
 def employee_page():
     st.title("Employee Page")
