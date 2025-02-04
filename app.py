@@ -76,68 +76,6 @@ def home_page():
             else:
                 st.error("Incorrect username or password. Please try again.")
 
-# Customer Page
-def customer_page():
-    st.title("Customer Page")
-    st.header("Welcome to Your Bank Account!")
-
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Transactions", key="customer_transactions"):
-            transaction_section()
-    with col2:
-        if st.button("Submit Feedback", key="customer_feedback"):
-            feedback_section()
-
-# Transaction Section
-def transaction_section():
-    st.title("Transactions")
-    action = st.selectbox("Select Action", ["Deposit", "Withdraw", "Check Balance"])
-
-    if action == "Deposit":
-        amount = st.number_input("Enter amount to deposit", min_value=1)
-        if st.button("Deposit", key="deposit_button"):
-            balance = st.session_state.bank.deposit(amount)
-            st.success(f"Deposit successful. New Balance: {balance}")
-
-    elif action == "Withdraw":
-        amount = st.number_input("Enter amount to withdraw", min_value=1)
-        if st.button("Withdraw", key="withdraw_button"):
-            result = st.session_state.bank.withdraw(amount)
-            if isinstance(result, str):
-                st.error(result)
-            else:
-                st.success(f"Withdrawal successful. New Balance: {result}")
-
-    elif action == "Check Balance":
-        balance = st.session_state.bank.check_balance()
-        st.info(f"Your current balance is: {balance}")
-
-# Feedback Section
-def feedback_section():
-    st.title("Submit Feedback")
-    name = st.text_input("Enter your name")
-    feedback = st.text_area("Write your feedback here")
-    rating = st.radio("Rate your experience (1 to 5)", [1, 2, 3, 4, 5])
-
-    if st.button("Submit Feedback", key="submit_feedback"):
-        if name and feedback:
-            st.session_state.feedback_list.append((name, feedback, rating))
-            st.success(f"Feedback submitted successfully! Rating: {rating}/5")
-            st.info("Thank you for your feedback! We will work on it.")
-            display_feedback()
-        else:
-            st.error("Please provide your name and feedback.")
-
-# Display Feedback
-def display_feedback():
-    st.header("Feedback Summary")
-    if st.session_state.feedback_list:
-        feedback_df = pd.DataFrame(st.session_state.feedback_list, columns=["Name", "Feedback", "Rating"])
-        st.table(feedback_df)
-    else:
-        st.info("No feedback submitted yet.")
-
 # Employee Page Function
 def employee_page():
     st.title("Employee Page")
@@ -200,7 +138,30 @@ def employee_page():
     elif prediction_type == "Group":
         uploaded_file = st.file_uploader("Upload a CSV File for Group Prediction", type=["csv"])
         if uploaded_file:
-            if st.button("Predict for Group Customers"):
-                try:
-                    group_data = pd.read_csv(uploaded_file)
+            try:
+                group_data = pd.read_csv(uploaded_file)
+                st.write("Data Preview:")
+                st.dataframe(group_data)
+                
+                if st.button("Predict for Group Customers"):
                     predictions = best_rf_model.predict(group_data)
+                    prediction_probs = best_rf_model.predict_proba(group_data)
+                    group_data["Prediction"] = predictions
+                    group_data["Prediction_Probabilities"] = [list(prob) for prob in prediction_probs]
+                    st.success("Predictions generated successfully!")
+                    st.write("Prediction Results:")
+                    st.dataframe(group_data)
+                    
+                    csv = group_data.to_csv(index=False).encode('utf-8')
+                    st.download_button(label="Download Predictions as CSV", data=csv, file_name="predictions.csv")
+            except Exception as e:
+                st.error(f"Error during group prediction: {e}")
+
+# Main
+if st.session_state.logged_in:
+    if st.session_state.user_type == "Customer":
+        customer_page()
+    elif st.session_state.user_type == "Employee":
+        employee_page()
+else:
+    home_page()
