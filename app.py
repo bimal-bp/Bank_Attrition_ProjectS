@@ -149,14 +149,18 @@ def employee_page():
     st.title("Employee Page")
     st.header("Welcome to the Employee Dashboard!")
 
+    # Create two columns for horizontal layout
     col1, col2 = st.columns(2)
 
-with col1:
-    prediction_type = st.radio("Select Prediction Type", ["Single", "Group"], horizontal=True)
+    # Add radio button in the first column
+    with col1:
+        prediction_type = st.radio("Select Prediction Type", ["Single", "Group"], horizontal=True)
 
-with col2:
-    if st.button("Feedback Analysis"):
-        st.write("Feedback Analysis Clicked!")
+    # Add a button in the second column
+    with col2:
+        if st.button("Feedback Analysis"):
+            st.write("Feedback Analysis Clicked!")
+
 
 
     if prediction_type == "Single":
