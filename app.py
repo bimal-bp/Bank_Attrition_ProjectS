@@ -2,6 +2,7 @@ import streamlit as st
 import pickle
 import pandas as pd
 import random
+import matplotlib.pyplot as plt
 
 # Load the pre-trained model
 try:
@@ -142,9 +143,6 @@ def feedback_section():
             # Display the thank you message
             st.info("Thank you for your feedback! We will work on it.")
             
-            # Optionally reset form (if you want to clear the inputs)
-            # st.session_state.transition = None  # Uncomment this line if needed
-
         else:
             st.error("Please provide your name and feedback.")
 
@@ -176,7 +174,7 @@ if 'user_type' in st.session_state:
     if st.session_state.user_type == "Customer":
         customer_page()
     elif st.session_state.user_type == "Employee":
-        st.write("Welcome, Employee!")
+        employee_page()
     elif st.session_state.user_type == "Manager":
         manager_page()
 else:
