@@ -8,7 +8,7 @@ try:
     best_rf_model = pickle.load(open("xgb_model.pkl", "rb"))
 except FileNotFoundError:
     best_rf_model = None
-    st.error("Model file not found. Please ensure 'best_rf_model.pkl' exists.")
+    st.error("Model file not found. Please ensure 'xgb_model.pkl' exists in the directory.")
 except Exception as e:
     best_rf_model = None
     st.error(f"Error loading model: {e}")
@@ -127,13 +127,16 @@ def employee_page():
         input_df = pd.DataFrame(input_data)
 
         if st.button("Predict for Single Customer"):
-            try:
-                prediction = best_rf_model.predict(input_df)
-                prediction_prob = best_rf_model.predict_proba(input_df)
-                st.success(f"Prediction: {prediction[0]}")
-                st.info(f"Prediction Probability: {prediction_prob}")
-            except Exception as e:
-                st.error(f"Error during prediction: {e}")
+            if best_rf_model:
+                try:
+                    prediction = best_rf_model.predict(input_df)
+                    prediction_prob = best_rf_model.predict_proba(input_df)
+                    st.success(f"Prediction: {prediction[0]}")
+                    st.info(f"Prediction Probability: {prediction_prob}")
+                except Exception as e:
+                    st.error(f"Error during prediction: {e}")
+            else:
+                st.error("Model is not loaded. Please check the model file.")
 
     elif prediction_type == "Group":
         uploaded_file = st.file_uploader("Upload a CSV File for Group Prediction", type=["csv"])
@@ -142,25 +145,32 @@ def employee_page():
                 group_data = pd.read_csv(uploaded_file)
                 st.write("Data Preview:")
                 st.dataframe(group_data)
-                
+
                 if st.button("Predict for Group Customers"):
-                    predictions = best_rf_model.predict(group_data)
-                    prediction_probs = best_rf_model.predict_proba(group_data)
-                    group_data["Prediction"] = predictions
-                    group_data["Prediction_Probabilities"] = [list(prob) for prob in prediction_probs]
-                    st.success("Predictions generated successfully!")
-                    st.write("Prediction Results:")
-                    st.dataframe(group_data)
-                    
-                    csv = group_data.to_csv(index=False).encode('utf-8')
-                    st.download_button(label="Download Predictions as CSV", data=csv, file_name="predictions.csv")
+                    if best_rf_model:
+                        try:
+                            predictions = best_rf_model.predict(group_data)
+                            prediction_probs = best_rf_model.predict_proba(group_data)
+                            group_data["Prediction"] = predictions
+                            group_data["Prediction_Probabilities"] = [list(prob) for prob in prediction_probs]
+                            st.success("Predictions generated successfully!")
+                            st.write("Prediction Results:")
+                            st.dataframe(group_data)
+
+                            csv = group_data.to_csv(index=False).encode('utf-8')
+                            st.download_button(label="Download Predictions as CSV", data=csv, file_name="predictions.csv")
+                        except Exception as e:
+                            st.error(f"Error during group prediction: {e}")
+                    else:
+                        st.error("Model is not loaded. Please check the model file.")
             except Exception as e:
-                st.error(f"Error during group prediction: {e}")
+                st.error(f"Error reading the uploaded file: {e}")
 
 # Main
 if st.session_state.logged_in:
     if st.session_state.user_type == "Customer":
-        customer_page()
+        st.title("Customer Dashboard")
+        st.info("Customer functionalities will be added here.")
     elif st.session_state.user_type == "Employee":
         employee_page()
 else:
