@@ -128,10 +128,15 @@ def process_uploaded_file(uploaded_file):
 
 # Main App Page
 def main_page():
+    if not st.session_state.logged_in:
+        login_page()
+        return
+
     st.title("Customer Attrition Prediction")
     st.sidebar.header(f"Welcome, {st.session_state.user_name}")
 
     st.sidebar.header('Prediction Type: ' + st.session_state.prediction_type)
+
     if st.session_state.prediction_type == "Single":
         # Individual customer input fields
         customer_age = st.sidebar.number_input("Customer Age", min_value=18, max_value=100, value=30)
@@ -173,15 +178,18 @@ def main_page():
             "$40K - $60K": [1 if income == "$40K - $60K" else 0],
             "$60K - $80K": [1 if income == "$60K - $80K" else 0],
             "$80K - $120K": [1 if income == "$80K - $120K" else 0],
-            "Less than $40K": [1 if income == "Less than $40K" else 0]
+            "Less than $40K": [1 if income == "Less than $40K" else 0],
         }
-
         input_df = pd.DataFrame(input_data)
-        if st.button("Predict"):
+
+        if st.sidebar.button("Predict"):
             predict_customer(input_df)
 
     elif st.session_state.prediction_type == "Group":
-        # File upload and processing
-        uploaded_file = st.file_uploader("Upload a CSV file", type=["csv"])
+        # File upload for group prediction
+        uploaded_file = st.sidebar.file_uploader("Upload a CSV File for Group Prediction", type=["csv"])
         if uploaded_file:
             process_uploaded_file(uploaded_file)
+
+if __name__ == "__main__":
+    main_page()
