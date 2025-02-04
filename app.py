@@ -114,16 +114,26 @@ def transaction_section():
 # Feedback Section
 def feedback_section():
     st.title("Submit Feedback")
-
+    
+    # Feedback form asking for name, feedback, and star rating
     name = st.text_input("Enter your name")
     feedback = st.text_area("Write your feedback here")
+    
+    # Asking for star rating out of 5
     rating = st.radio("Rate your experience (1 to 5)", [1, 2, 3, 4, 5])
-
-    if st.button("Submit Feedback"):
+    
+    if st.button("Submit Feedback", key="submit_feedback"):
         if name and feedback:
+            # Storing feedback with rating properly
             st.session_state.feedback_list.append((name, feedback, rating))
             st.success(f"Feedback submitted successfully! Rating: {rating}/5")
+            
+            # Display the thank you message
             st.info("Thank you for your feedback! We will work on it.")
+            
+            # Optionally reset form (if you want to clear the inputs)
+            # st.session_state.transition = None  # Uncomment this line if needed
+
         else:
             st.error("Please provide your name and feedback.")
 
