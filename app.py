@@ -55,9 +55,9 @@ def home_page():
     col1, col2 = st.columns(2)
 
     with col1:
-        customer_username = st.text_input("Enter Customer Username", key="customer_username")
-        customer_password = st.text_input("Enter Customer Password", type="password", key="customer_password")
-        if st.button("Log In as Customer", key="customer_login"):
+        customer_username = st.text_input("Enter Customer Username")
+        customer_password = st.text_input("Enter Customer Password", type="password")
+        if st.button("Log In as Customer"):
             if customer_username == "customer" and customer_password == "customer123":
                 st.session_state.user_type = "Customer"
                 st.session_state.logged_in = True
@@ -66,9 +66,9 @@ def home_page():
                 st.error("Incorrect username or password. Please try again.")
 
     with col2:
-        employee_username = st.text_input("Enter Employee Username", key="employee_username")
-        employee_password = st.text_input("Enter Employee Password", type="password", key="employee_password")
-        if st.button("Log In as Employee", key="employee_login"):
+        employee_username = st.text_input("Enter Employee Username")
+        employee_password = st.text_input("Enter Employee Password", type="password")
+        if st.button("Log In as Employee"):
             if employee_username == "admin" and employee_password == "admin123":
                 st.session_state.user_type = "Employee"
                 st.session_state.logged_in = True
@@ -131,73 +131,48 @@ def employee_page():
                 try:
                     prediction = best_rf_model.predict(input_df)
 
-                    # Display prediction result
                     if prediction[0] == 1:
-                        st.markdown(f"### Prediction: Customer is likely to attrit ✅")
-                        st.subheader("Attrition Risk Insights:")
-                        st.write(f"- Inactive Months (12 months): {inactive_months_12_months} months")
-                        st.write(f"- Transaction Amount Change (Q4-Q1): {transaction_amount_change_q4_q1}")
-                        st.write(f"- Total Products Used: {total_products_used}")
-                        st.write(f"- Total Transactions Count: {total_transactions_count}")
-                        st.write(f"- Average Credit Utilization: {average_credit_utilization}")
-                        st.write(f"- Customer Contacts in 12 Months: {customer_contacts_12_months}")
+                        st.success("Customer is likely to attrit ✅")
                     else:
-                        st.markdown(f"### Prediction: Customer is unlikely to attrit ❌")
-                        st.subheader("Non-Attrition Insights:")
-                        st.write(f"- Inactive Months (12 months): {inactive_months_12_months} months")
-                        st.write(f"- Transaction Amount Change (Q4-Q1): {transaction_amount_change_q4_q1}")
-                        st.write(f"- Total Products Used: {total_products_used}")
-                        st.write(f"- Total Transactions Count: {total_transactions_count}")
-                        st.write(f"- Average Credit Utilization: {average_credit_utilization}")
-                        st.write(f"- Customer Contacts in 12 Months: {customer_contacts_12_months}")
+                        st.success("Customer is unlikely to attrit ❌")
                 except Exception as e:
                     st.error(f"Error during prediction: {e}")
             else:
                 st.error("Model is not loaded. Please check the model file.")
 
-elif prediction_type == "Group":
-    uploaded_file = st.file_uploader("Upload a CSV File for Group Prediction", type=["csv"])
-    if uploaded_file:
-        try:
-            group_data = pd.read_csv(uploaded_file)
-            st.write("Data Preview:")
-            st.dataframe(group_data)
+    elif prediction_type == "Group":
+        uploaded_file = st.file_uploader("Upload a CSV File for Group Prediction", type=["csv"])
+        if uploaded_file:
+            try:
+                group_data = pd.read_csv(uploaded_file)
+                st.write("Data Preview:")
+                st.dataframe(group_data)
 
-            if st.button("Predict for Group Customers"):
-                if best_rf_model:
-                    try:
-                        predictions = best_rf_model.predict(group_data)
-                        group_data["Prediction"] = predictions
+                if st.button("Predict for Group Customers"):
+                    if best_rf_model:
+                        try:
+                            predictions = best_rf_model.predict(group_data)
+                            group_data["Prediction"] = predictions
 
-                        # Count the number of attritions and non-attritions
-                        prediction_counts = group_data["Prediction"].value_counts()
-                        labels = ["Unlikely to Attrit", "Likely to Attrit"]
-                        sizes = [prediction_counts.get(0, 0), prediction_counts.get(1, 0)]
+                            prediction_counts = group_data["Prediction"].value_counts()
+                            labels = ["Unlikely to Attrit", "Likely to Attrit"]
+                            sizes = [prediction_counts.get(0, 0), prediction_counts.get(1, 0)]
 
-                        # Display a pie chart
-                        fig, ax = plt.subplots()
-                        ax.pie(
-                            sizes,
-                            labels=labels,
-                            autopct='%1.1f%%',
-                            startangle=90,
-                            colors=["#4CAF50", "#F44336"],
-                        )
-                        ax.axis("equal")  # Equal aspect ratio ensures the pie chart is circular.
-                        st.pyplot(fig)
+                            fig, ax = plt.subplots()
+                            ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, colors=["#4CAF50", "#F44336"])
+                            ax.axis("equal")
+                            st.pyplot(fig)
 
-                        st.success("Predictions generated successfully!")
-                        
-                        # Allow the user to download predictions as CSV
-                        csv = group_data.to_csv(index=False).encode('utf-8')
-                        st.download_button(label="Download Predictions as CSV", data=csv, file_name="predictions.csv")
+                            csv = group_data.to_csv(index=False).encode('utf-8')
+                            st.download_button(label="Download Predictions as CSV", data=csv, file_name="predictions.csv")
 
-                    except Exception as e:
-                        st.error(f"Error during group prediction: {e}")
-                else:
-                    st.error("Model is not loaded. Please check the model file.")
-        except Exception as e:
-            st.error(f"Error reading the uploaded file: {e}")
+                        except Exception as e:
+                            st.error(f"Error during group prediction: {e}")
+                    else:
+                        st.error("Model is not loaded. Please check the model file.")
+            except Exception as e:
+                st.error(f"Error reading the uploaded file: {e}")
+
 # Main
 if st.session_state.logged_in:
     if st.session_state.user_type == "Customer":
