@@ -149,7 +149,15 @@ def employee_page():
     st.title("Employee Page")
     st.header("Welcome to the Employee Dashboard!")
 
+    col1, col2 = st.columns(2)
+
+with col1:
     prediction_type = st.radio("Select Prediction Type", ["Single", "Group"], horizontal=True)
+
+with col2:
+    if st.button("Feedback Analysis"):
+        st.write("Feedback Analysis Clicked!")
+
 
     if prediction_type == "Single":
         st.info("Provide Customer Details for Prediction")
