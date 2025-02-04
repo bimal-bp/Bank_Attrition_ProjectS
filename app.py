@@ -126,38 +126,38 @@ def employee_page():
         }
         input_df = pd.DataFrame(input_data)
 
-if st.button("Predict for Single Customer"):
-    if best_rf_model:
-        try:
-            prediction = best_rf_model.predict(input_df)
-            prediction_prob = best_rf_model.predict_proba(input_df)
+        if st.button("Predict for Single Customer"):
+            if best_rf_model:
+                try:
+                    prediction = best_rf_model.predict(input_df)
+                    prediction_prob = best_rf_model.predict_proba(input_df)
 
-            # Display prediction result
-            if prediction[0] == 1:
-                st.markdown(f"### Prediction: Customer is likely to attrit ✅")
-                st.subheader("Attrition Risk Insights:")
-                st.write(f"- Inactive Months (12 months): {inactive_months_12_months} months")
-                st.write(f"- Transaction Amount Change (Q4-Q1): {transaction_amount_change_q4_q1}")
-                st.write(f"- Total Products Used: {total_products_used}")
-                st.write(f"- Total Transactions Count: {total_transactions_count}")
-                st.write(f"- Average Credit Utilization: {average_credit_utilization}")
-                st.write(f"- Customer Contacts in 12 Months: {customer_contacts_12_months}")
+                    # Display prediction result
+                    if prediction[0] == 1:
+                        st.markdown(f"### Prediction: Customer is likely to attrit ✅")
+                        st.subheader("Attrition Risk Insights:")
+                        st.write(f"- Inactive Months (12 months): {inactive_months_12_months} months")
+                        st.write(f"- Transaction Amount Change (Q4-Q1): {transaction_amount_change_q4_q1}")
+                        st.write(f"- Total Products Used: {total_products_used}")
+                        st.write(f"- Total Transactions Count: {total_transactions_count}")
+                        st.write(f"- Average Credit Utilization: {average_credit_utilization}")
+                        st.write(f"- Customer Contacts in 12 Months: {customer_contacts_12_months}")
+                    else:
+                        st.markdown(f"### Prediction: Customer is unlikely to attrit ❌")
+                        st.subheader("Non-Attrition Insights:")
+                        st.write(f"- Inactive Months (12 months): {inactive_months_12_months} months")
+                        st.write(f"- Transaction Amount Change (Q4-Q1): {transaction_amount_change_q4_q1}")
+                        st.write(f"- Total Products Used: {total_products_used}")
+                        st.write(f"- Total Transactions Count: {total_transactions_count}")
+                        st.write(f"- Average Credit Utilization: {average_credit_utilization}")
+                        st.write(f"- Customer Contacts in 12 Months: {customer_contacts_12_months}")
+
+                    # Display prediction probabilities
+                    st.info(f"Prediction Probability: {prediction_prob}")
+                except Exception as e:
+                    st.error(f"Error during prediction: {e}")
             else:
-                st.markdown(f"### Prediction: Customer is unlikely to attrit ❌")
-                st.subheader("Non-Attrition Insights:")
-                st.write(f"- Inactive Months (12 months): {inactive_months_12_months} months")
-                st.write(f"- Transaction Amount Change (Q4-Q1): {transaction_amount_change_q4_q1}")
-                st.write(f"- Total Products Used: {total_products_used}")
-                st.write(f"- Total Transactions Count: {total_transactions_count}")
-                st.write(f"- Average Credit Utilization: {average_credit_utilization}")
-                st.write(f"- Customer Contacts in 12 Months: {customer_contacts_12_months}")
-
-            # Display prediction probabilities
-            st.info(f"Prediction Probability: {prediction_prob}")
-        except Exception as e:
-            st.error(f"Error during prediction: {e}")
-    else:
-        st.error("Model is not loaded. Please check the model file.")
+                st.error("Model is not loaded. Please check the model file.")
 
     elif prediction_type == "Group":
         uploaded_file = st.file_uploader("Upload a CSV File for Group Prediction", type=["csv"])
