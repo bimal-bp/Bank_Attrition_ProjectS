@@ -127,17 +127,14 @@ def feedback_section():
             st.info("Thank you for your feedback! We will work on it.")
         else:
             st.error("Please provide your name and feedback.")
-
 # Employee Page
 def employee_page():
     st.title("Employee Page")
     st.header("Welcome to the Employee Dashboard!")
-
     st.write("### Customer Retention Prediction")
     prediction_type = st.selectbox("Select Prediction Type", ["Single", "Group"])
-
-    # Store the selected prediction type in session state
     st.session_state.prediction_type = prediction_type
+
 # Single customer prediction
 def predict_single_customer(data):
     if best_rf_model is None:
@@ -210,6 +207,18 @@ def main_page():
         transaction_amount_change = st.number_input("Transaction Amount Change Q4 to Q1", value=0.2)
         months_as_customer = st.number_input("Months as Customer", min_value=1, value=36)
 
+        # Education Level Selection
+        education_level = st.selectbox("Education Level", ['Uneducated', 'High School', 'College', 'Graduate', 'Post-Graduate', 'Doctorate'])
+        salary_range = st.selectbox("Salary Range", ['$120K +', '$40K - $60K', '$60K - $80K', '$80K - $120K', 'Less than $40K'])
+
+        # One-hot encoding for education and salary
+        education_columns = ['College', 'Doctorate', 'Graduate', 'High School', 'Post-Graduate', 'Uneducated']
+        salary_columns = ['$120K +', '$40K - $60K', '$60K - $80K', '$80K - $120K', 'Less than $40K']
+        
+        education_data = [1 if level == education_level else 0 for level in education_columns]
+        salary_data = [1 if salary == salary_range else 0 for salary in salary_columns]
+
+        # Create input data
         input_data = pd.DataFrame({
             'Customer_Age': [customer_age],
             'Credit_Limit': [credit_limit],
@@ -221,7 +230,9 @@ def main_page():
             'Average_Credit_Utilization': [avg_credit_utilization],
             'Customer_Contacts_12_Months': [customer_contacts],
             'Transaction_Amount_Change_Q4_Q1': [transaction_amount_change],
-            'Months_as_Customer': [months_as_customer]
+            'Months_as_Customer': [months_as_customer],
+            **dict(zip(education_columns, education_data)),
+            **dict(zip(salary_columns, salary_data))
         })
 
         if st.button("Predict Customer Retention"):
