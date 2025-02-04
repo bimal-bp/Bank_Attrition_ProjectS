@@ -38,7 +38,6 @@ if 'feedback_list' not in st.session_state:
 if 'bank' not in st.session_state:
     st.session_state.bank = Bank(balance=0)
 
-# Initialize session state for login and user type
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 
@@ -55,10 +54,9 @@ def home_page():
     with col1:
         customer_username = st.text_input("Enter Customer Username", key="customer_username")
         customer_password = st.text_input("Enter Customer Password", type="password", key="customer_password")
-        if st.button("Log In as Customer"):
+        if st.button("Log In as Customer", key="customer_login"):
             if customer_username == "customer" and customer_password == "customer123":
                 st.session_state.user_type = "Customer"
-                st.session_state.prediction_type = "Single"  # Default prediction type for customer
                 st.session_state.logged_in = True
                 st.session_state.user_name = "Customer"
             else:
@@ -67,10 +65,9 @@ def home_page():
     with col2:
         employee_username = st.text_input("Enter Employee Username", key="employee_username")
         employee_password = st.text_input("Enter Employee Password", type="password", key="employee_password")
-        if st.button("Log In as Employee"):
+        if st.button("Log In as Employee", key="employee_login"):
             if employee_username == "admin" and employee_password == "admin123":
                 st.session_state.user_type = "Employee"
-                st.session_state.prediction_type = "Single"  # Default prediction type for employee
                 st.session_state.logged_in = True
                 st.session_state.user_name = "Employee"
             else:
@@ -83,10 +80,10 @@ def customer_page():
 
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("Transactions"):
+        if st.button("Transactions", key="customer_transactions"):
             transaction_section()
     with col2:
-        if st.button("Submit Feedback"):
+        if st.button("Submit Feedback", key="customer_feedback"):
             feedback_section()
 
 # Transaction Section
@@ -96,13 +93,13 @@ def transaction_section():
 
     if action == "Deposit":
         amount = st.number_input("Enter amount to deposit", min_value=1)
-        if st.button("Deposit"):
+        if st.button("Deposit", key="deposit_button"):
             balance = st.session_state.bank.deposit(amount)
             st.success(f"Deposit successful. New Balance: {balance}")
 
     elif action == "Withdraw":
         amount = st.number_input("Enter amount to withdraw", min_value=1)
-        if st.button("Withdraw"):
+        if st.button("Withdraw", key="withdraw_button"):
             result = st.session_state.bank.withdraw(amount)
             if isinstance(result, str):
                 st.error(result)
@@ -125,6 +122,21 @@ def feedback_section():
             st.session_state.feedback_list.append((name, feedback, rating))
             st.success(f"Feedback submitted successfully! Rating: {rating}/5")
             st.info("Thank you for your feedback! We will work on it.")
+            display_feedback()
         else:
             st.error("Please provide your name and feedback.")
 
+def display_feedback():
+    st.header("Feedback Summary")
+    if st.session_state.feedback_list:
+        feedback_df = pd.DataFrame(st.session_state.feedback_list, columns=["Name", "Feedback", "Rating"])
+        st.table(feedback_df)
+    else:
+        st.info("No feedback submitted yet.")
+
+# Main
+if not st.session_state.logged_in:
+    home_page()
+else:
+    if st.session_state.user_type == "Customer":
+        customer_page()
