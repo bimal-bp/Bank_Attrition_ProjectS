@@ -43,22 +43,33 @@ if 'bank' not in st.session_state:
     st.session_state.bank = Bank(balance=0)
 
 # Home Page
+# Home Page
 def home_page():
     st.title("Welcome to Our Bank Service")
     st.header("Please log in")
 
-    # Login Selection
     col1, col2 = st.columns(2)
 
     with col1:
-        if st.button("Customer Login"):
-            st.session_state.user_type = "Customer"
-            st.session_state.transition = None  # Reset transition state when logging in as Customer
+        customer_username = st.text_input("Enter Customer Username", key="customer_username")
+        customer_password = st.text_input("Enter Customer Password", type="password", key="customer_password")
+        if st.button("Log In as Customer"):
+            if customer_username == "customer" and customer_password == "customer123":
+                st.session_state.user_type = "Customer"
+                st.session_state.prediction_type = "Single"  # Default prediction type for customer
+            else:
+                st.error("Incorrect username or password. Please try again.")
 
     with col2:
-        if st.button("Employee Login"):
-            st.session_state.user_type = "Employee"
-            st.session_state.transition = None  # Reset transition state when logging in as Employee
+        employee_username = st.text_input("Enter Employee Username", key="employee_username")
+        employee_password = st.text_input("Enter Employee Password", type="password", key="employee_password")
+        if st.button("Log In as Employee"):
+            if employee_username == "admin" and employee_password == "admin123":
+                st.session_state.user_type = "Employee"
+                st.session_state.prediction_type = "Single"  # Default prediction type for employee
+            else:
+                st.error("Incorrect username or password. Please try again.")
+
 
 # Customer Page
 def customer_page():
