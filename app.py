@@ -157,12 +157,13 @@ def predict_single_customer(data):
         st.error("Model not loaded. Cannot make predictions.")
         return
     try:
-        # Ensure input is a DataFrame
-        prediction = best_rf_model.predict(data)
+        # Convert input to DataFrame format for compatibility with the model
+        prediction = best_rf_model.predict(data.values)
         result_text = "Customer is likely to attrit ✅" if prediction[0] == 1 else "Customer is unlikely to attrit ❌"
         st.markdown(f"### Prediction: {result_text}")
     except Exception as e:
         st.error(f"Prediction error: {e}")
+
 
 # Group customer prediction
 def process_uploaded_file(uploaded_file):
