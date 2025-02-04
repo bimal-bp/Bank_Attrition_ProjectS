@@ -13,9 +13,10 @@ except Exception as e:
     best_rf_model = None
     st.error(f"Error loading model: {e}")
 
+
 # Bank class to handle transactions
 class Bank:
-    def __init__(self, balance=0):
+    def _init_(self, balance=0):
         self.balance = balance
 
     def deposit(self, amount):
@@ -31,50 +32,115 @@ class Bank:
     def check_balance(self):
         return self.balance
 
-# Initialize session state
+# Initialize session state for feedback list and bank balance
 if 'feedback_list' not in st.session_state:
     st.session_state.feedback_list = []
 
 if 'bank' not in st.session_state:
     st.session_state.bank = Bank(balance=0)
 
-if 'logged_in' not in st.session_state:
-    st.session_state.logged_in = False
-
-if 'user_type' not in st.session_state:
-    st.session_state.user_type = ""
-
-if 'user_name' not in st.session_state:
-    st.session_state.user_name = ""
-
 # Home Page
 def home_page():
     st.title("Welcome to Our Bank Service")
     st.header("Please log in")
 
+    # Login Selection
     col1, col2 = st.columns(2)
 
     with col1:
-        customer_username = st.text_input("Enter Customer Username")
-        customer_password = st.text_input("Enter Customer Password", type="password")
+        customer_username = st.text_input("Enter Customer Username", key="customer_username")
+        customer_password = st.text_input("Enter Customer Password", type="password", key="customer_password")
         if st.button("Log In as Customer"):
+            # Validate username and password for Customer
             if customer_username == "customer" and customer_password == "customer123":
                 st.session_state.user_type = "Customer"
-                st.session_state.logged_in = True
-                st.session_state.user_name = "Customer"
+                st.session_state.transition = None  # Reset transition state
             else:
                 st.error("Incorrect username or password. Please try again.")
 
     with col2:
-        employee_username = st.text_input("Enter Employee Username")
-        employee_password = st.text_input("Enter Employee Password", type="password")
+        employee_username = st.text_input("Enter Employee Username", key="employee_username")
+        employee_password = st.text_input("Enter Employee Password", type="password", key="employee_password")
         if st.button("Log In as Employee"):
+            # Validate username and password for Employee
             if employee_username == "admin" and employee_password == "admin123":
                 st.session_state.user_type = "Employee"
-                st.session_state.logged_in = True
-                st.session_state.user_name = "Employee"
+                st.session_state.transition = None  # Reset transition state
             else:
                 st.error("Incorrect username or password. Please try again.")
+
+# Customer Page
+def customer_page():
+    st.title("Customer Page")
+    st.header("Welcome to Your Bank Account!")
+
+    # Select Action in two columns
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if st.button("Transactions"):
+            st.session_state.transition = "Transactions"  # Set transition to transactions
+            
+    with col2:
+        if st.button("Submit Feedback"):
+            st.session_state.transition = "Feedback"  # Set transition to feedback
+
+    # Show Transaction or Feedback based on the user's choice
+    if st.session_state.transition == "Transactions":
+        transaction_section()
+    elif st.session_state.transition == "Feedback":
+        feedback_section()
+
+# Transaction Section
+def transaction_section():
+    st.title("Transactions")
+
+    action = st.selectbox("Select Action", ["Deposit", "Withdraw", "Check Balance"])
+    
+    if action == "Deposit":
+        amount = st.number_input("Enter amount to deposit", min_value=1)
+        if st.button("Deposit"):
+            balance = st.session_state.bank.deposit(amount)
+            st.success(f"Deposit successful. New Balance: {balance}")
+
+    elif action == "Withdraw":
+        amount = st.number_input("Enter amount to withdraw", min_value=1)
+        if st.button("Withdraw"):
+            result = st.session_state.bank.withdraw(amount)
+            if isinstance(result, str):
+                st.error(result)
+            else:
+                st.success(f"Withdrawal successful. New Balance: {result}")
+
+    elif action == "Check Balance":
+        balance = st.session_state.bank.check_balance()
+        st.info(f"Your current balance is: {balance}")
+
+def feedback_section():
+    st.title("Submit Feedback")
+    
+    # Feedback form asking for name, feedback, and star rating
+    name = st.text_input("Enter your name")
+    feedback = st.text_area("Write your feedback here")
+    
+    # Asking for star rating out of 5
+    rating = st.radio("Rate your experience (1 to 5)", [1, 2, 3, 4, 5])
+    
+    if st.button("Submit Feedback", key="submit_feedback"):
+        if name and feedback:
+            # Storing feedback with rating properly
+            st.session_state.feedback_list.append((name, feedback, rating))
+            st.success(f"Feedback submitted successfully! Rating: {rating}/5")
+            
+            # Display the thank you message
+            st.info("Thank you for your feedback! We will work on it.")
+            
+            # Optionally reset form (if you want to clear the inputs)
+            # st.session_state.transition = None  # Uncomment this line if needed
+
+        else:
+            st.error("Please provide your name and feedback.")
+
 
 # Employee Page Function
 def employee_page():
@@ -131,10 +197,25 @@ def employee_page():
                 try:
                     prediction = best_rf_model.predict(input_df)
 
+                    # Display prediction result
                     if prediction[0] == 1:
-                        st.success("Customer is likely to attrit ✅")
+                        st.markdown(f"### Prediction: Customer is likely to attrit ✅")
+                        st.subheader("Attrition Risk Insights:")
+                        st.write(f"- Inactive Months (12 months): {inactive_months_12_months} months")
+                        st.write(f"- Transaction Amount Change (Q4-Q1): {transaction_amount_change_q4_q1}")
+                        st.write(f"- Total Products Used: {total_products_used}")
+                        st.write(f"- Total Transactions Count: {total_transactions_count}")
+                        st.write(f"- Average Credit Utilization: {average_credit_utilization}")
+                        st.write(f"- Customer Contacts in 12 Months: {customer_contacts_12_months}")
                     else:
-                        st.success("Customer is unlikely to attrit ❌")
+                        st.markdown(f"### Prediction: Customer is unlikely to attrit ❌")
+                        st.subheader("Non-Attrition Insights:")
+                        st.write(f"- Inactive Months (12 months): {inactive_months_12_months} months")
+                        st.write(f"- Transaction Amount Change (Q4-Q1): {transaction_amount_change_q4_q1}")
+                        st.write(f"- Total Products Used: {total_products_used}")
+                        st.write(f"- Total Transactions Count: {total_transactions_count}")
+                        st.write(f"- Average Credit Utilization: {average_credit_utilization}")
+                        st.write(f"- Customer Contacts in 12 Months: {customer_contacts_12_months}")
                 except Exception as e:
                     st.error(f"Error during prediction: {e}")
             else:
@@ -154,15 +235,26 @@ def employee_page():
                             predictions = best_rf_model.predict(group_data)
                             group_data["Prediction"] = predictions
 
+                            # Count the number of attritions and non-attritions
                             prediction_counts = group_data["Prediction"].value_counts()
                             labels = ["Unlikely to Attrit", "Likely to Attrit"]
                             sizes = [prediction_counts.get(0, 0), prediction_counts.get(1, 0)]
 
+                            # Display a pie chart
                             fig, ax = plt.subplots()
-                            ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, colors=["#4CAF50", "#F44336"])
-                            ax.axis("equal")
+                            ax.pie(
+                                sizes,
+                                labels=labels,
+                                autopct='%1.1f%%',
+                                startangle=90,
+                                colors=["#4CAF50", "#F44336"],
+                            )
+                            ax.axis("equal")  # Equal aspect ratio ensures the pie chart is circular.
                             st.pyplot(fig)
 
+                            st.success("Predictions generated successfully!")
+
+                            # Allow the user to download predictions as CSV
                             csv = group_data.to_csv(index=False).encode('utf-8')
                             st.download_button(label="Download Predictions as CSV", data=csv, file_name="predictions.csv")
 
@@ -173,12 +265,3 @@ def employee_page():
             except Exception as e:
                 st.error(f"Error reading the uploaded file: {e}")
 
-# Main
-if st.session_state.logged_in:
-    if st.session_state.user_type == "Customer":
-        st.title("Customer Dashboard")
-        st.info("Customer functionalities will be added here.")
-    elif st.session_state.user_type == "Employee":
-        employee_page()
-else:
-    home_page()
