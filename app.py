@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pickle
 import pandas as pd
@@ -144,8 +145,13 @@ def feedback_section():
             st.error("Please provide your name and feedback.")
 
 
+# Employee Page Function
 
-# Function for the Employee Page
+
+import pickle
+import random
+import streamlit as st
+
 def employee_page():
     st.title("Employee Page")
     st.header("Welcome to the Employee Dashboard!")
@@ -186,64 +192,8 @@ def employee_page():
             except Exception as e:
                 st.error(f"An error occurred while loading feedback data: {e}")
 
-# Function for the Group Prediction Page with 3D Pie Chart
-def group_prediction_page():
-    uploaded_file = st.file_uploader("Upload a CSV File for Group Prediction", type=["csv"])
-    if uploaded_file:
-        try:
-            group_data = pd.read_csv(uploaded_file)
-            st.write("Data Preview:")
-            st.dataframe(group_data)
 
-            if st.button("Predict for Group Customers"):
-                if 'best_rf_model' in globals():  # Assuming the model is loaded globally
-                    try:
-                        predictions = best_rf_model.predict(group_data)
-                        group_data["Prediction"] = predictions
 
-                        # Count the number of attritions and non-attritions
-                        prediction_counts = group_data["Prediction"].value_counts()
-                        labels = ["Unlikely to Attrit", "Likely to Attrit"]
-                        sizes = [prediction_counts.get(0, 0), prediction_counts.get(1, 0)]
-
-                        # Display a pie chart with shadow style
-                        fig, ax = plt.subplots()
-                        ax.pie(
-                            sizes,
-                            labels=labels,
-                            autopct='%1.1f%%',
-                            startangle=90,
-                            colors=["#4CAF50", "#F44336"],
-                            shadow=True  # Adding the shadow effect
-                        )
-                        ax.axis("equal")  # Equal aspect ratio ensures the pie chart is circular.
-                        st.pyplot(fig)
-
-                        st.success("Predictions generated successfully!")
-
-                        # Allow the user to download predictions as CSV
-                        csv = group_data.to_csv(index=False).encode('utf-8')
-                        st.download_button(label="Download Predictions as CSV", data=csv, file_name="predictions.csv")
-
-                    except Exception as e:
-                        st.error(f"Error during group prediction: {e}")
-                else:
-                    st.error("Model is not loaded. Please check the model file.")
-        except Exception as e:
-            st.error(f"Error reading the uploaded file: {e}")
-
-# Main Function for Navigation
-def main():
-    st.sidebar.title("Navigation")
-    page = st.sidebar.radio("Choose a page", ["Employee Page", "Group Prediction"])
-
-    if page == "Employee Page":
-        employee_page()
-    elif page == "Group Prediction":
-        group_prediction_page()
-
-if __name__ == "__main__":
-    main()
 
     if prediction_type == "Single":
         st.info("Provide Customer Details for Prediction")
@@ -316,3 +266,62 @@ if __name__ == "__main__":
                     st.error(f"Error during prediction: {e}")
             else:
                 st.error("Model is not loaded. Please check the model file.")
+
+    elif prediction_type == "Group":
+        uploaded_file = st.file_uploader("Upload a CSV File for Group Prediction", type=["csv"])
+        if uploaded_file:
+            try:
+                group_data = pd.read_csv(uploaded_file)
+                st.write("Data Preview:")
+                st.dataframe(group_data)
+
+                if st.button("Predict for Group Customers"):
+                    if best_rf_model:
+                        try:
+                            predictions = best_rf_model.predict(group_data)
+                            group_data["Prediction"] = predictions
+
+                            # Count the number of attritions and non-attritions
+                            prediction_counts = group_data["Prediction"].value_counts()
+                            labels = ["Unlikely to Attrit", "Likely to Attrit"]
+                            sizes = [prediction_counts.get(0, 0), prediction_counts.get(1, 0)]
+
+                            # Display a pie chart
+                            fig, ax = plt.subplots()
+                            ax.pie(
+                                sizes,
+                                labels=labels,
+                                autopct='%1.1f%%',
+                                startangle=90,
+                                colors=["#4CAF50", "#F44336"],
+                            )
+                            ax.axis("equal")  # Equal aspect ratio ensures the pie chart is circular.
+                            st.pyplot(fig)
+
+                            st.success("Predictions generated successfully!")
+
+                            # Allow the user to download predictions as CSV
+                            csv = group_data.to_csv(index=False).encode('utf-8')
+                            st.download_button(label="Download Predictions as CSV", data=csv, file_name="predictions.csv")
+
+                        except Exception as e:
+                            st.error(f"Error during group prediction: {e}")
+                    else:
+                        st.error("Model is not loaded. Please check the model file.")
+            except Exception as e:
+                st.error(f"Error reading the uploaded file: {e}")
+
+# Main function to run the app
+def main():
+    if 'user_type' not in st.session_state:
+        st.session_state.user_type = None
+
+    if st.session_state.user_type == "Customer":
+        customer_page()
+    elif st.session_state.user_type == "Employee":
+        employee_page()
+    else:
+        home_page()
+
+if __name__ == "__main__":
+    main()
