@@ -163,7 +163,7 @@ def employee_page():
         if st.button("Feedback Analysis"):
             try:
                 # Load feedbacks from the pickle file
-                with open("feedback_data.pkl", "rb") as file:
+                with open("feedback_data2.pkl", "rb") as file:
                     feedback_df = pickle.load(file)
 
                 # Ensure the data is a DataFrame
