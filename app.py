@@ -150,7 +150,6 @@ def feedback_section():
 
         else:
             st.error("Please provide your name and feedback.")
-
 import pickle
 import pandas as pd
 import streamlit as st
@@ -173,17 +172,12 @@ def feedback_analysis_page():
         st.write("Data Loaded:", feedback_df.head())
 
         # Analyze feedback
-        pos_count, neg_count, issue_keywords, random_feedbacks = analyze_feedback(feedback_df)
+        random_feedbacks = analyze_feedback(feedback_df)
 
-        if pos_count is not None:
-            st.subheader("Feedback Analysis Summary")
-            st.write(f"✅ **Positive Reviews:** {pos_count}")
-            st.write(f"❌ **Negative Reviews:** {neg_count}")
-
-            # Display randomly selected feedback (17 random samples)
+        if random_feedbacks is not None:
             st.subheader("📌 Selected Feedback Samples")
-            for feedback in random_feedbacks.values():
-                st.write(f"**Feedback:** {feedback}")
+            for feedback, sentiment in random_feedbacks.items():
+                st.write(f"**Feedback:** {feedback} - **Sentiment:** {sentiment}")
 
             # Display bank's standard response
             st.subheader("🏦 Bank's Response")
@@ -194,8 +188,8 @@ def feedback_analysis_page():
             )
 
             # Get AI-driven suggestions
-            st.subheader("💡 Bank Strategy for Increase Customer ")
-            suggestions = get_suggestions(issue_keywords)
+            st.subheader("💡 Bank Strategy for Increase Customer Experience")
+            suggestions = get_suggestions()
             st.write(suggestions)
 
     except FileNotFoundError:
@@ -204,44 +198,32 @@ def feedback_analysis_page():
         st.error(f"An error occurred while processing feedback data: {e}")
 
 def analyze_feedback(feedback_df):
-    """Perform sentiment analysis and return positive, negative counts, key issues, and selected feedback samples."""
+    """Perform sentiment analysis and return selected feedback samples with sentiment."""    
     if not isinstance(feedback_df, pd.DataFrame) or "Feedback" not in feedback_df.columns:
         st.error("Invalid data format. Ensure the DataFrame contains a 'Feedback' column.")
-        return None, None, None, {}
-
-    # Sentiment classification
-    feedback_df["Sentiment"] = feedback_df["Feedback"].apply(
-        lambda text: "Positive" if sia.polarity_scores(text)["compound"] > 0 else "Negative"
-    )
-
-    # Count positive and negative reviews
-    pos_count = (feedback_df["Sentiment"] == "Positive").sum()
-    neg_count = (feedback_df["Sentiment"] == "Negative").sum()
+        return None
 
     # Select 17 random feedback samples (without fixed random_state)
     random_feedbacks = feedback_df.sample(n=17).to_dict()["Feedback"] if len(feedback_df) >= 17 else {}
 
-    # Identify key issues in negative feedback
-    negative_feedbacks = feedback_df[feedback_df["Sentiment"] == "Negative"]["Feedback"].tolist()
-    issue_keywords = extract_common_issues(negative_feedbacks)
+    # Sentiment classification for each feedback sample
+    feedback_sentiments = {}
+    for feedback in random_feedbacks.values():
+        sentiment_score = sia.polarity_scores(feedback)["compound"]
+        sentiment = "Positive" if sentiment_score > 0 else "Negative"
+        feedback_sentiments[feedback] = sentiment
 
-    return pos_count, neg_count, issue_keywords, random_feedbacks
+    return feedback_sentiments
 
-def extract_common_issues(negative_feedbacks):
-    """Identify key issues in negative feedback."""
-    if not negative_feedbacks:
-        return []
-
-    return ["We are reviewing your concerns and will improve our services accordingly."]
-
-def get_suggestions(issue_keywords):
+def get_suggestions():
     """Generate improvement suggestions using AI."""
-    prompt = f"Customers have reported negative feedback mainly related to {', '.join(issue_keywords)}. Suggest improvements to enhance customer experience."
+    prompt = "Customers have reported negative feedback. Suggest improvements to enhance customer experience."
 
     # This part assumes you have a model to generate content, replace this with your actual API/model call.
     response = model.generate_content(prompt)
 
     return response.text if response else "No AI-generated suggestions available at the moment."
+
 
 
 
