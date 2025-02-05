@@ -150,10 +150,7 @@ def feedback_section():
 
         else:
             st.error("Please provide your name and feedback.")
-import pickle
-import pandas as pd
-import streamlit as st
-from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+
 
 # Initialize sentiment intensity analyzer
 sia = SentimentIntensityAnalyzer()
@@ -167,9 +164,6 @@ def feedback_analysis_page():
         # Load feedback data from pickle file
         with open("feedback_data2.pkl", "rb") as file:
             feedback_df = pickle.load(file)
-        
-        # Debug: Show the first few rows of the dataframe to ensure it's loaded properly
-        st.write("Data Loaded:", feedback_df.head())
 
         # Analyze feedback
         random_feedbacks = analyze_feedback(feedback_df)
@@ -223,7 +217,6 @@ def get_suggestions():
     response = model.generate_content(prompt)
 
     return response.text if response else "No AI-generated suggestions available at the moment."
-
 
 
 
