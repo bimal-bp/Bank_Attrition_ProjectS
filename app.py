@@ -53,6 +53,10 @@ if 'feedback_list' not in st.session_state:
 if 'bank' not in st.session_state:
     st.session_state.bank = Bank(balance=0)
 
+# Initialize session state for transition
+if 'transition' not in st.session_state:
+    st.session_state.transition = None
+
 # Home Page
 def home_page():
     st.title("Welcome to Our Bank Service")
