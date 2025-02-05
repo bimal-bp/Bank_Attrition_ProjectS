@@ -38,12 +38,13 @@ class Bank:
 
     def withdraw(self, amount):
         if amount > self.balance:
-            return "Insufficient balance"
+            return "Insufficient funds"
         self.balance -= amount
         return self.balance
 
     def check_balance(self):
         return self.balance
+
 
 # Initialize session state for feedback list and bank balance
 if 'feedback_list' not in st.session_state:
@@ -103,10 +104,14 @@ def customer_page():
 
 # Transaction Section
 def transaction_section():
+    # Check if bank is initialized in session state
+    if 'bank' not in st.session_state:
+        st.session_state.bank = Bank()  # Initialize the bank instance if not already initialized
+
     st.title("Transactions")
 
     action = st.selectbox("Select Action", ["Deposit", "Withdraw", "Check Balance"])
-    
+
     if action == "Deposit":
         amount = st.number_input("Enter amount to deposit", min_value=1)
         if st.button("Deposit"):
@@ -125,6 +130,7 @@ def transaction_section():
     elif action == "Check Balance":
         balance = st.session_state.bank.check_balance()
         st.info(f"Your current balance is: {balance}")
+
 
 def feedback_section():
     st.title("Submit Feedback")
