@@ -151,10 +151,6 @@ def feedback_section():
         else:
             st.error("Please provide your name and feedback.")
 
-# Feedback Analysis Page
-
-# Initialize Sentiment Analyzer
-sia = SentimentIntensityAnalyzer()
 
 # Feedback Analysis Page
 def feedback_analysis_page():
@@ -174,28 +170,23 @@ def feedback_analysis_page():
             st.write(f"✅ **Positive Reviews:** {pos_count}")
             st.write(f"❌ **Negative Reviews:** {neg_count}")
 
-            # Display selected random feedback (e.g., IDs 17 and 19)
+            # Display randomly selected feedback (17 random samples)
             st.subheader("📌 Selected Feedback Samples")
             for idx, feedback in random_feedbacks.items():
                 st.write(f"**Feedback {idx}:** {feedback}")
 
-            # Display main causes of negative feedback
-            if issue_keywords:
-                st.subheader("🔍 Main Causes of Negative Feedback")
-                st.write(", ".join(issue_keywords))
+            # Display bank's standard response
+            st.subheader("🏦 Bank's Response")
+            st.write(
+                "We sincerely regret any inconvenience you may have faced. "
+                "Your feedback is valuable, and we are actively working to improve our services. "
+                "Thank you for bringing this to our attention."
+            )
 
-                # Display bank's standard response
-                st.subheader("🏦 Bank's Response")
-                st.write(
-                    "We sincerely regret any inconvenience you may have faced. "
-                    "Your feedback is valuable, and we are actively working to improve our services. "
-                    "Thank you for bringing this to our attention."
-                )
-
-                # Get AI-driven suggestions
-                st.subheader("💡 AI-Generated Improvement Suggestions")
-                suggestions = get_suggestions(issue_keywords)
-                st.write(suggestions)
+            # Get AI-driven suggestions (you can keep this part if needed)
+            st.subheader("💡 Bank Strategy for Improvement Suggestions")
+            suggestions = get_suggestions(issue_keywords)
+            st.write(suggestions)
 
     except FileNotFoundError:
         st.error("Feedback data file not found. Please ensure 'feedback_data2.pkl' exists.")
@@ -203,7 +194,7 @@ def feedback_analysis_page():
         st.error(f"An error occurred while processing feedback data: {e}")
 
 def analyze_feedback(feedback_df):
-    """Perform sentiment analysis and return positive, negative counts, key issues, and random feedback samples."""
+    """Perform sentiment analysis and return positive, negative counts, key issues, and selected feedback samples."""
     if not isinstance(feedback_df, pd.DataFrame) or "Feedback" not in feedback_df.columns:
         st.error("Invalid data format. Ensure the DataFrame contains a 'Feedback' column.")
         return None, None, None, {}
@@ -217,26 +208,24 @@ def analyze_feedback(feedback_df):
     pos_count = (feedback_df["Sentiment"] == "Positive").sum()
     neg_count = (feedback_df["Sentiment"] == "Negative").sum()
 
-    # Extract negative feedback
+    # Select 17 random feedback samples (without fixed random_state)
+    random_feedbacks = feedback_df.sample(n=17).to_dict()["Feedback"] if len(feedback_df) >= 17 else {}
+
+    # Identify key issues in negative feedback (you can keep the part for key issues if needed)
     negative_feedbacks = feedback_df[feedback_df["Sentiment"] == "Negative"]["Feedback"].tolist()
-
-    # Identify key issues in negative feedback
     issue_keywords = extract_common_issues(negative_feedbacks)
-
-    # Select specific feedback samples (IDs 17 and 19)
-    random_feedbacks = feedback_df.iloc[[17, 19]].to_dict()["Feedback"] if len(feedback_df) > 19 else {}
 
     return pos_count, neg_count, issue_keywords, random_feedbacks
 
 def extract_common_issues(negative_feedbacks):
-    """Provide a response acknowledging customer concerns and offering AI-generated suggestions."""
+    """Identify key issues in negative feedback."""
     if not negative_feedbacks:
         return []
 
     return ["We are reviewing your concerns and will improve our services accordingly."]
 
 def get_suggestions(issue_keywords):
-    """Generate improvement suggestions using the Gemini API."""
+    """Generate improvement suggestions using AI (you can adjust this part if needed)."""
     prompt = f"Customers have reported negative feedback mainly related to {', '.join(issue_keywords)}. Suggest improvements to enhance customer experience."
 
     response = model.generate_content(prompt)
