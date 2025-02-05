@@ -1,9 +1,21 @@
-
-
 import streamlit as st
 import pickle
 import pandas as pd
 import matplotlib.pyplot as plt
+import google.generativeai as genai
+import nltk
+from nltk.sentiment import SentimentIntensityAnalyzer
+from collections import Counter
+
+# Download necessary NLTK data
+nltk.download("vader_lexicon")
+
+# Initialize sentiment analyzer
+sia = SentimentIntensityAnalyzer()
+
+# Configure Gemini API (Replace "YOUR_API_KEY" with your actual key)
+genai.configure(api_key="AIzaSyDuGJM-eeTKZXKaZ8tmqYt_C6OuSE8ktuc")
+model = genai.GenerativeModel("gemini-pro")
 
 # Load the pre-trained model
 try:
@@ -14,9 +26,6 @@ except FileNotFoundError:
 except Exception as e:
     best_rf_model = None
     st.error(f"Error loading model: {e}")
-
-# Bank class to handle transactions
-import streamlit as st
 
 # Bank class to handle transactions
 class Bank:
@@ -36,7 +45,6 @@ class Bank:
     def check_balance(self):
         return self.balance
 
-
 # Initialize session state for feedback list and bank balance
 if 'feedback_list' not in st.session_state:
     st.session_state.feedback_list = []
@@ -44,7 +52,6 @@ if 'feedback_list' not in st.session_state:
 if 'bank' not in st.session_state:
     st.session_state.bank = Bank(balance=0)
 
-# Home Page
 # Home Page
 def home_page():
     st.title("Welcome to Our Bank Service")
@@ -71,7 +78,6 @@ def home_page():
                 st.session_state.prediction_type = "Single"  # Default prediction type for employee
             else:
                 st.error("Incorrect username or password. Please try again.")
-
 
 # Customer Page
 def customer_page():
@@ -145,6 +151,73 @@ def feedback_section():
         else:
             st.error("Please provide your name and feedback.")
 
+# Feedback Analysis Page
+def feedback_analysis_page():
+    st.title("Feedback Analysis")
+    st.header("Analyze Customer Feedback")
+
+    try:
+        # Load feedbacks from the pickle file
+        with open("feedback_data2.pkl", "rb") as file:
+            feedback_df = pickle.load(file)
+
+        # Analyze feedback
+        pos_count, neg_count, issue_keywords = analyze_feedback(feedback_df)
+
+        if pos_count is not None:
+            st.subheader("Feedback Analysis Summary")
+            st.write(f"✅ **Positive Reviews:** {pos_count}")
+            st.write(f"❌ **Negative Reviews:** {neg_count}")
+
+            # Display main causes of negative feedback
+            if issue_keywords:
+                st.subheader("🔍 Main Causes of Negative Feedback")
+                st.write(", ".join(issue_keywords))
+
+                # Get AI-driven suggestions
+                st.subheader("💡 AI-Generated Improvement Suggestions")
+                suggestions = get_suggestions(issue_keywords)
+                st.write(suggestions)
+
+    except FileNotFoundError:
+        st.error("Feedback data file not found. Please ensure 'feedback_data2.pkl' exists.")
+    except Exception as e:
+        st.error(f"An error occurred while processing feedback data: {e}")
+
+def analyze_feedback(feedback_df):
+    """Perform sentiment analysis and return positive, negative counts and key issues."""
+    if not isinstance(feedback_df, pd.DataFrame) or "Feedback" not in feedback_df.columns:
+        st.error("Invalid data format. Ensure the DataFrame contains a 'Feedback' column.")
+        return None, None, None
+
+    # Sentiment classification
+    feedback_df["Sentiment"] = feedback_df["Feedback"].apply(lambda text: "Positive" if sia.polarity_scores(text)["compound"] > 0 else "Negative")
+
+    # Count positive and negative reviews
+    pos_count = (feedback_df["Sentiment"] == "Positive").sum()
+    neg_count = (feedback_df["Sentiment"] == "Negative").sum()
+
+    # Extract negative feedback
+    negative_feedbacks = feedback_df[feedback_df["Sentiment"] == "Negative"]["Feedback"].tolist()
+
+    # Identify key issues in negative feedback using word frequency
+    issue_keywords = extract_common_issues(negative_feedbacks)
+
+    return pos_count, neg_count, issue_keywords
+
+def extract_common_issues(negative_feedbacks):
+    """Extract the most common words from negative feedback to identify key issues."""
+    words = " ".join(negative_feedbacks).lower().split()
+    common_words = Counter(words).most_common(5)  # Get top 5 frequent words
+    return [word[0] for word in common_words]
+
+def get_suggestions(issue_keywords):
+    """Generate improvement suggestions using the Gemini API."""
+    prompt = f"Customers have reported negative feedback mainly related to {', '.join(issue_keywords)}. Suggest improvements to enhance customer experience."
+    
+    response = model.generate_content(prompt)
+    
+    return response.text if response else "No suggestions available."
 
 # Employee Page Function
 def employee_page():
@@ -161,163 +234,144 @@ def employee_page():
     # Add a button in the second column
     with col2:
         if st.button("Feedback Analysis"):
-            try:
-                # Load feedbacks from the pickle file
-                with open("feedback_data2.pkl", "rb") as file:
-                    feedback_df = pickle.load(file)
+            st.session_state.page = "Feedback Analysis"
 
-                # Ensure the data is a DataFrame
-                if not isinstance(feedback_df, pd.DataFrame):
-                    st.error("Feedback data is not in a DataFrame format.")
-                    return
+    if st.session_state.page == "Feedback Analysis":
+        feedback_analysis_page()
+    else:
+        if prediction_type == "Single":
+            st.info("Provide Customer Details for Prediction")
+            customer_age = st.number_input("Customer Age", min_value=18, max_value=100, value=30)
+            credit_limit = st.number_input("Credit Limit", min_value=0, value=7000)
+            total_transactions_count = st.number_input("Total Transactions Count", min_value=0, value=50)
+            total_transaction_amount = st.number_input("Total Transaction Amount", min_value=0, value=5000)
+            inactive_months_12_months = st.number_input("Inactive Months (12 Months)", min_value=0, max_value=12, value=2)
+            transaction_count_change_q4_q1 = st.number_input("Transaction Count Change (Q4-Q1)", min_value=0.0, value=0.5)
+            total_products_used = st.number_input("Total Products Used", min_value=1, value=2)
+            average_credit_utilization = st.number_input("Average Credit Utilization", min_value=0.0, max_value=1.0, value=0.2)
+            customer_contacts_12_months = st.number_input("Customer Contacts in 12 Months", min_value=0, value=1)
+            transaction_amount_change_q4_q1 = st.number_input("Transaction Amount Change (Q4-Q1)", min_value=0.0, value=0.5)
+            months_as_customer = st.number_input("Months as Customer", min_value=1, value=12)
 
-                # Check for the 'Feedback' column
-                if "Feedback" not in feedback_df.columns:
-                    st.error("The DataFrame does not contain a 'Feedback' column.")
-                    return
+            education = st.selectbox("Select Education Level", ["College", "Doctorate", "Graduate", "High School", "Post-Graduate", "Uneducated"])
+            income = st.selectbox("Select Income Range", ["$120K +", "$40K - $60K", "$60K - $80K", "$80K - $120K", "Less than $40K"])
 
-                # Get random feedbacks
-                st.subheader("Customer Feedbacks")
-                feedbacks = feedback_df["Feedback"].sample(17)  # Randomly select 17 feedbacks
-                for i, feedback in enumerate(feedbacks, 1):
-                    st.write(f"{i}. {feedback}")
+            input_data = {
+                "Customer_Age": [customer_age],
+                "Credit_Limit": [credit_limit],
+                "Total_Transactions_Count": [total_transactions_count],
+                "Total_Transaction_Amount": [total_transaction_amount],
+                "Inactive_Months_12_Months": [inactive_months_12_months],
+                "Transaction_Count_Change_Q4_Q1": [transaction_count_change_q4_q1],
+                "Total_Products_Used": [total_products_used],
+                "Average_Credit_Utilization": [average_credit_utilization],
+                "Customer_Contacts_12_Months": [customer_contacts_12_months],
+                "Transaction_Amount_Change_Q4_Q1": [transaction_amount_change_q4_q1],
+                "Months_as_Customer": [months_as_customer],
+                "College": [1 if education == "College" else 0],
+                "Doctorate": [1 if education == "Doctorate" else 0],
+                "Graduate": [1 if education == "Graduate" else 0],
+                "High School": [1 if education == "High School" else 0],
+                "Post-Graduate": [1 if education == "Post-Graduate" else 0],
+                "Uneducated": [1 if education == "Uneducated" else 0],
+                "$120K +": [1 if income == "$120K +" else 0],
+                "$40K - $60K": [1 if income == "$40K - $60K" else 0],
+                "$60K - $80K": [1 if income == "$60K - $80K" else 0],
+                "$80K - $120K": [1 if income == "$80K - $120K" else 0],
+                "Less than $40K": [1 if income == "Less than $40K" else 0],
+            }
+            input_df = pd.DataFrame(input_data)
 
-            except FileNotFoundError:
-                st.error("Feedback data file not found. Please ensure 'feedback_data2.pkl' exists.")
-            except Exception as e:
-                st.error(f"An error occurred while loading feedback data: {e}")
+            if st.button("Predict for Single Customer"):
+                if best_rf_model:
+                    try:
+                        prediction = best_rf_model.predict(input_df)
 
-    if prediction_type == "Single":
-        st.info("Provide Customer Details for Prediction")
-        customer_age = st.number_input("Customer Age", min_value=18, max_value=100, value=30)
-        credit_limit = st.number_input("Credit Limit", min_value=0, value=7000)
-        total_transactions_count = st.number_input("Total Transactions Count", min_value=0, value=50)
-        total_transaction_amount = st.number_input("Total Transaction Amount", min_value=0, value=5000)
-        inactive_months_12_months = st.number_input("Inactive Months (12 Months)", min_value=0, max_value=12, value=2)
-        transaction_count_change_q4_q1 = st.number_input("Transaction Count Change (Q4-Q1)", min_value=0.0, value=0.5)
-        total_products_used = st.number_input("Total Products Used", min_value=1, value=2)
-        average_credit_utilization = st.number_input("Average Credit Utilization", min_value=0.0, max_value=1.0, value=0.2)
-        customer_contacts_12_months = st.number_input("Customer Contacts in 12 Months", min_value=0, value=1)
-        transaction_amount_change_q4_q1 = st.number_input("Transaction Amount Change (Q4-Q1)", min_value=0.0, value=0.5)
-        months_as_customer = st.number_input("Months as Customer", min_value=1, value=12)
+                        # Display prediction result
+                        if prediction[0] == 1:
+                            st.markdown(f"### Prediction: Customer is likely to attrit ✅")
+                            st.subheader("Attrition Risk Insights:")
+                            st.write(f"- Inactive Months (12 months): {inactive_months_12_months} months")
+                            st.write(f"- Transaction Amount Change (Q4-Q1): {transaction_amount_change_q4_q1}")
+                            st.write(f"- Total Products Used: {total_products_used}")
+                            st.write(f"- Total Transactions Count: {total_transactions_count}")
+                            st.write(f"- Average Credit Utilization: {average_credit_utilization}")
+                            st.write(f"- Customer Contacts in 12 Months: {customer_contacts_12_months}")
+                        else:
+                            st.markdown(f"### Prediction: Customer is unlikely to attrit ❌")
+                            st.subheader("Non-Attrition Insights:")
+                            st.write(f"- Inactive Months (12 months): {inactive_months_12_months} months")
+                            st.write(f"- Transaction Amount Change (Q4-Q1): {transaction_amount_change_q4_q1}")
+                            st.write(f"- Total Products Used: {total_products_used}")
+                            st.write(f"- Total Transactions Count: {total_transactions_count}")
+                            st.write(f"- Average Credit Utilization: {average_credit_utilization}")
+                            st.write(f"- Customer Contacts in 12 Months: {customer_contacts_12_months}")
+                    except Exception as e:
+                        st.error(f"Error during prediction: {e}")
+                else:
+                    st.error("Model is not loaded. Please check the model file.")
 
-        education = st.selectbox("Select Education Level", ["College", "Doctorate", "Graduate", "High School", "Post-Graduate", "Uneducated"])
-        income = st.selectbox("Select Income Range", ["$120K +", "$40K - $60K", "$60K - $80K", "$80K - $120K", "Less than $40K"])
-
-        input_data = {
-            "Customer_Age": [customer_age],
-            "Credit_Limit": [credit_limit],
-            "Total_Transactions_Count": [total_transactions_count],
-            "Total_Transaction_Amount": [total_transaction_amount],
-            "Inactive_Months_12_Months": [inactive_months_12_months],
-            "Transaction_Count_Change_Q4_Q1": [transaction_count_change_q4_q1],
-            "Total_Products_Used": [total_products_used],
-            "Average_Credit_Utilization": [average_credit_utilization],
-            "Customer_Contacts_12_Months": [customer_contacts_12_months],
-            "Transaction_Amount_Change_Q4_Q1": [transaction_amount_change_q4_q1],
-            "Months_as_Customer": [months_as_customer],
-            "College": [1 if education == "College" else 0],
-            "Doctorate": [1 if education == "Doctorate" else 0],
-            "Graduate": [1 if education == "Graduate" else 0],
-            "High School": [1 if education == "High School" else 0],
-            "Post-Graduate": [1 if education == "Post-Graduate" else 0],
-            "Uneducated": [1 if education == "Uneducated" else 0],
-            "$120K +": [1 if income == "$120K +" else 0],
-            "$40K - $60K": [1 if income == "$40K - $60K" else 0],
-            "$60K - $80K": [1 if income == "$60K - $80K" else 0],
-            "$80K - $120K": [1 if income == "$80K - $120K" else 0],
-            "Less than $40K": [1 if income == "Less than $40K" else 0],
-        }
-        input_df = pd.DataFrame(input_data)
-
-        if st.button("Predict for Single Customer"):
-            if best_rf_model:
+        elif prediction_type == "Group":
+            uploaded_file = st.file_uploader("Upload a CSV File for Group Prediction", type=["csv"])
+            if uploaded_file:
                 try:
-                    prediction = best_rf_model.predict(input_df)
+                    group_data = pd.read_csv(uploaded_file)
+                    st.write("Data Preview:")
+                    st.dataframe(group_data)
 
-                    # Display prediction result
-                    if prediction[0] == 1:
-                        st.markdown(f"### Prediction: Customer is likely to attrit ✅")
-                        st.subheader("Attrition Risk Insights:")
-                        st.write(f"- Inactive Months (12 months): {inactive_months_12_months} months")
-                        st.write(f"- Transaction Amount Change (Q4-Q1): {transaction_amount_change_q4_q1}")
-                        st.write(f"- Total Products Used: {total_products_used}")
-                        st.write(f"- Total Transactions Count: {total_transactions_count}")
-                        st.write(f"- Average Credit Utilization: {average_credit_utilization}")
-                        st.write(f"- Customer Contacts in 12 Months: {customer_contacts_12_months}")
-                    else:
-                        st.markdown(f"### Prediction: Customer is unlikely to attrit ❌")
-                        st.subheader("Non-Attrition Insights:")
-                        st.write(f"- Inactive Months (12 months): {inactive_months_12_months} months")
-                        st.write(f"- Transaction Amount Change (Q4-Q1): {transaction_amount_change_q4_q1}")
-                        st.write(f"- Total Products Used: {total_products_used}")
-                        st.write(f"- Total Transactions Count: {total_transactions_count}")
-                        st.write(f"- Average Credit Utilization: {average_credit_utilization}")
-                        st.write(f"- Customer Contacts in 12 Months: {customer_contacts_12_months}")
+                    if st.button("Predict for Group Customers"):
+                        if best_rf_model:
+                            try:
+                                predictions = best_rf_model.predict(group_data)
+                                group_data["Prediction"] = predictions
+
+                                # Count the number of attritions and non-attritions
+                                prediction_counts = group_data["Prediction"].value_counts()
+                                labels = ["Likely to Stay", "Likely to Leave"]
+                                sizes = [prediction_counts.get(0, 0), prediction_counts.get(1, 0)]
+
+                                # Display a stylish pie chart with shadow, smooth edges, and borders
+                                fig, ax = plt.subplots(figsize=(6, 6))  # Adjusting figure size
+                                wedges, texts, autotexts = ax.pie(
+                                    sizes,
+                                    labels=labels,
+                                    autopct='%1.1f%%',
+                                    startangle=90,
+                                    colors=["#4CAF50", "#F44336"],
+                                    shadow=True,  # Adding shadow effect
+                                    wedgeprops=dict(edgecolor='black', linewidth=2, linestyle='solid', alpha=0.9)  # Stylish wedge borders
+                                )
+
+                                # Customizing the font size and style for texts
+                                for t in texts + autotexts:
+                                    t.set_fontsize(14)
+                                    t.set_fontweight('bold')
+                                    t.set_color('white')
+
+                                # Adding title and making the chart circular
+                                ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+                                st.pyplot(fig)
+
+                                st.success("Predictions generated successfully!")
+
+                                # Allow the user to download predictions as CSV
+                                csv = group_data.to_csv(index=False).encode('utf-8')
+                                st.download_button(label="Download Predictions as CSV", data=csv, file_name="predictions.csv")
+
+                            except Exception as e:
+                                st.error(f"Error during group prediction: {e}")
+                        else:
+                            st.error("Model is not loaded. Please check the model file.")
                 except Exception as e:
-                    st.error(f"Error during prediction: {e}")
-            else:
-                st.error("Model is not loaded. Please check the model file.")
-
-    elif prediction_type == "Group":
-        uploaded_file = st.file_uploader("Upload a CSV File for Group Prediction", type=["csv"])
-        if uploaded_file:
-            try:
-                group_data = pd.read_csv(uploaded_file)
-                st.write("Data Preview:")
-                st.dataframe(group_data)
-
-                if st.button("Predict for Group Customers"):
-                    if best_rf_model:
-                        try:
-                            predictions = best_rf_model.predict(group_data)
-                            group_data["Prediction"] = predictions
-
-                            # Count the number of attritions and non-attritions
-                            prediction_counts = group_data["Prediction"].value_counts()
-                            labels = ["Likely to Stay", "Likely to Leave"]
-                            sizes = [prediction_counts.get(0, 0), prediction_counts.get(1, 0)]
-
-                            # Display a stylish pie chart with shadow, smooth edges, and borders
-                            fig, ax = plt.subplots(figsize=(6, 6))  # Adjusting figure size
-                            wedges, texts, autotexts = ax.pie(
-                                sizes,
-                                labels=labels,
-                                autopct='%1.1f%%',
-                                startangle=90,
-                                colors=["#4CAF50", "#F44336"],
-                                shadow=True,  # Adding shadow effect
-                                wedgeprops=dict(edgecolor='black', linewidth=2, linestyle='solid', alpha=0.9)  # Stylish wedge borders
-                            )
-
-                            # Customizing the font size and style for texts
-                            for t in texts + autotexts:
-                                t.set_fontsize(14)
-                                t.set_fontweight('bold')
-                                t.set_color('white')
-
-                            # Adding title and making the chart circular
-                            ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-                            st.pyplot(fig)
-
-                            st.success("Predictions generated successfully!")
-
-                            # Allow the user to download predictions as CSV
-                            csv = group_data.to_csv(index=False).encode('utf-8')
-                            st.download_button(label="Download Predictions as CSV", data=csv, file_name="predictions.csv")
-
-                        except Exception as e:
-                            st.error(f"Error during group prediction: {e}")
-                    else:
-                        st.error("Model is not loaded. Please check the model file.")
-            except Exception as e:
-                st.error(f"Error reading the uploaded file: {e}")
-
+                    st.error(f"Error reading the uploaded file: {e}")
 
 # Main function to run the app
 def main():
     if 'user_type' not in st.session_state:
         st.session_state.user_type = None
+
+    if 'page' not in st.session_state:
+        st.session_state.page = None
 
     if st.session_state.user_type == "Customer":
         customer_page()
