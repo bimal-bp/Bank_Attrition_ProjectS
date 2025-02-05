@@ -151,6 +151,14 @@ def feedback_section():
         else:
             st.error("Please provide your name and feedback.")
 
+import pickle
+import streamlit as st
+import pandas as pd
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+
+# Initialize SentimentIntensityAnalyzer
+sia = SentimentIntensityAnalyzer()
+
 # Feedback Analysis Page
 def feedback_analysis_page():
     st.title("Feedback Analysis")
@@ -165,14 +173,11 @@ def feedback_analysis_page():
         pos_count, neg_count, issue_keywords, random_feedbacks = analyze_feedback(feedback_df)
 
         if pos_count is not None:
-            st.subheader("Feedback Analysis Summary")
-            st.write(f"✅ **Positive Reviews:** {pos_count}")
-            st.write(f"❌ **Negative Reviews:** {neg_count}")
-
             # Display randomly selected feedback (17 random samples)
             st.subheader("📌 Selected Feedback Samples")
-            for idx, feedback in random_feedbacks.items():
-                st.write(f"**Feedback:** {feedback}")
+            for feedback in random_feedbacks:
+                sentiment = "✅ Positive Review" if sia.polarity_scores(feedback)["compound"] > 0 else "❌ Negative Review"
+                st.write(f"{sentiment}: **Feedback:** {feedback}")
 
             # Display bank's standard response
             st.subheader("🏦 Bank's Response")
@@ -183,7 +188,7 @@ def feedback_analysis_page():
             )
 
             # Get AI-driven suggestions
-            st.subheader("💡 Bank Strategy for Increase Customer ")
+            st.subheader("💡 Bank Strategy for Increase Customer Experience")
             suggestions = get_suggestions(issue_keywords)
             st.write(suggestions)
 
@@ -193,19 +198,10 @@ def feedback_analysis_page():
         st.error(f"An error occurred while processing feedback data: {e}")
 
 def analyze_feedback(feedback_df):
-    """Perform sentiment analysis and return positive, negative counts, key issues, and selected feedback samples."""
+    """Perform sentiment analysis and return selected feedback samples and key issues."""
     if not isinstance(feedback_df, pd.DataFrame) or "Feedback" not in feedback_df.columns:
         st.error("Invalid data format. Ensure the DataFrame contains a 'Feedback' column.")
         return None, None, None, {}
-
-    # Sentiment classification
-    feedback_df["Sentiment"] = feedback_df["Feedback"].apply(
-        lambda text: "Positive" if sia.polarity_scores(text)["compound"] > 0 else "Negative"
-    )
-
-    # Count positive and negative reviews
-    pos_count = (feedback_df["Sentiment"] == "Positive").sum()
-    neg_count = (feedback_df["Sentiment"] == "Negative").sum()
 
     # Select 17 random feedback samples (without fixed random_state)
     random_feedbacks = feedback_df.sample(n=17).to_dict()["Feedback"] if len(feedback_df) >= 17 else {}
@@ -214,7 +210,7 @@ def analyze_feedback(feedback_df):
     negative_feedbacks = feedback_df[feedback_df["Sentiment"] == "Negative"]["Feedback"].tolist()
     issue_keywords = extract_common_issues(negative_feedbacks)
 
-    return pos_count, neg_count, issue_keywords, random_feedbacks
+    return None, None, issue_keywords, random_feedbacks
 
 def extract_common_issues(negative_feedbacks):
     """Identify key issues in negative feedback."""
