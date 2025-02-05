@@ -151,7 +151,6 @@ def feedback_section():
         else:
             st.error("Please provide your name and feedback.")
 
-
 # Feedback Analysis Page
 def feedback_analysis_page():
     st.title("Feedback Analysis")
@@ -173,7 +172,7 @@ def feedback_analysis_page():
             # Display randomly selected feedback (17 random samples)
             st.subheader("📌 Selected Feedback Samples")
             for idx, feedback in random_feedbacks.items():
-                st.write(f"**Feedback {idx}:** {feedback}")
+                st.write(f"**Feedback:** {feedback}")
 
             # Display bank's standard response
             st.subheader("🏦 Bank's Response")
@@ -183,8 +182,8 @@ def feedback_analysis_page():
                 "Thank you for bringing this to our attention."
             )
 
-            # Get AI-driven suggestions (you can keep this part if needed)
-            st.subheader("💡 Bank Strategy for Improvement Suggestions")
+            # Get AI-driven suggestions
+            st.subheader("💡 Bank Strategy for Increase Customer ")
             suggestions = get_suggestions(issue_keywords)
             st.write(suggestions)
 
@@ -211,7 +210,7 @@ def analyze_feedback(feedback_df):
     # Select 17 random feedback samples (without fixed random_state)
     random_feedbacks = feedback_df.sample(n=17).to_dict()["Feedback"] if len(feedback_df) >= 17 else {}
 
-    # Identify key issues in negative feedback (you can keep the part for key issues if needed)
+    # Identify key issues in negative feedback
     negative_feedbacks = feedback_df[feedback_df["Sentiment"] == "Negative"]["Feedback"].tolist()
     issue_keywords = extract_common_issues(negative_feedbacks)
 
@@ -225,9 +224,10 @@ def extract_common_issues(negative_feedbacks):
     return ["We are reviewing your concerns and will improve our services accordingly."]
 
 def get_suggestions(issue_keywords):
-    """Generate improvement suggestions using AI (you can adjust this part if needed)."""
+    """Generate improvement suggestions using AI."""
     prompt = f"Customers have reported negative feedback mainly related to {', '.join(issue_keywords)}. Suggest improvements to enhance customer experience."
 
+    # This part assumes you have a model to generate content, replace this with your actual API/model call.
     response = model.generate_content(prompt)
 
     return response.text if response else "No AI-generated suggestions available at the moment."
