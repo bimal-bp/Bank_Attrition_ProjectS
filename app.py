@@ -58,7 +58,7 @@ if 'transition' not in st.session_state:
     st.session_state.transition = None
 
 # Home Page
-def home_page():
+adef home_page():
     st.title("Welcome to Our Bank Service")
     st.header("Please log in")
 
