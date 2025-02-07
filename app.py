@@ -1,4 +1,4 @@
-aimport streamlit as st
+import streamlit as st
 import pickle
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -58,7 +58,7 @@ if 'transition' not in st.session_state:
     st.session_state.transition = None
 
 # Home Page
-def home_page():
+adef home_page():
     st.title("Welcome to Our Bank Service")
     st.header("Please log in")
 
