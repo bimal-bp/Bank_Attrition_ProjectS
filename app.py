@@ -28,7 +28,7 @@ except Exception as e:
     st.error(f"Error loading model: {e}")
 
 # Bank class to handle transactions
-aclass Bank:
+class Bank:
     def __init__(self, balance=0):
         self.balance = balance
 
@@ -58,7 +58,7 @@ if 'transition' not in st.session_state:
     st.session_state.transition = None
 
 # Home Page
-adef home_page():
+def home_page():
     st.title("Welcome to Our Bank Service")
     st.header("Please log in")
 
