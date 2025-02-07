@@ -1,4 +1,4 @@
-import streamlit as st
+aimport streamlit as st
 import pickle
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -28,7 +28,7 @@ except Exception as e:
     st.error(f"Error loading model: {e}")
 
 # Bank class to handle transactions
-class Bank:
+aclass Bank:
     def __init__(self, balance=0):
         self.balance = balance
 
